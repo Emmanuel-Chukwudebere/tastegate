@@ -1,1 +1,7 @@
 .superpowers/
+node_modules/
+*.log
+DESIGN-structure/
+.design-tmp/
+*.png
+!docs/**/*.png
