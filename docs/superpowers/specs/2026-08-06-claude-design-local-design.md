@@ -79,7 +79,8 @@ Three of these were not in the original design and change it materially:
 - **Spacing** — `p`, `px`/`py`, `pt`/`pr`/`pb`/`pl`
 - **Appearance** — `bg`, `stroke`, `strokeWidth`, `opacity`, `rounded`, `shadow`, `blur`
 - **Native effects** — `noise`, `texture`, `progressiveBlur`, `glass` (with refraction/depth/radius/dispersion/light controls)
-- **Icons** — `<Icon>` pulls from Iconify (e.g. `lucide:star`), so icons are never hand-drawn as paths
+- **Icons** — `<Icon name="<prefix>:<name>" size color>` pulls real SVG from the Iconify API; `create icon` does the same standalone with `-s`/`-c` (and `-c` accepts `var:name`, so icon color stays token-bound). `lucide:` is the docs' example, **not a constraint** — any of Iconify's 231 collections works
+- **Raw SVG** — `<SVG>` accepts arbitrary SVG, which is the escape hatch for icon sets Iconify does not host
 
 Documented gotchas, each a real failure mode: `layout="horizontal"` → `flex="row"`; `padding={24}` → `p={24}`; `fill="#fff"` → `bg="#fff"`; `cornerRadius={12}` → `rounded={12}`. And a hard rule from the tool's own `CLAUDE.md`: **never use `eval` to create visual nodes** — it bypasses positioning, name dedup, constraints, and every safety guard.
 
@@ -169,11 +170,52 @@ analyze-url <url> -w 1440 --screenshot     desktop
 
 What this yields per reference: exact type scale and its ratio across breakpoints, real spacing rhythm, true colors (no eyedropper guessing), and the reflow strategy — what stacks, what hides, where columns collapse. Breakpoint behaviour is then a first-class part of the taste profile and a scored dimension in `RUBRIC.md`, rather than something discovered late at ship time.
 
-Two related commands support intake: `screenshot-url` imports a site screenshot into Figma as a reference on the canvas, and `recreate-url` rebuilds a page in Figma at 1440px — useful for studying a reference's structure as editable layers, never for shipping someone else's design.
+Screenshots are always captured alongside the CSS extraction, at every breakpoint. Numbers alone under-describe a reference — composition, rhythm, and the feel of a layout only read visually — so each reference contributes **both** exact values and a visual record. `--screenshot` on `analyze-url` covers this, `screenshot-url` imports the image into Figma as an on-canvas reference, and `recreate-url` rebuilds a page as editable layers at 1440px for studying structure. The last is for study only, never for shipping someone else's design.
+
+### Motion and interaction from a reference page — what is and is not possible
+
+Direct answer: **`analyze-url` does not capture motion.** I read its source (`src/commands/url-tools.js`, 674 lines). Its `getComputedStyle` calls collect a fixed, static set — `color`, `backgroundColor`, `fontSize`, `fontWeight`, `fontFamily`, `borderRadius`, `border`/`borderWidth`/`borderColor`, and padding — plus `getBoundingClientRect` geometry for headings, buttons, inputs, and labels. No `transition`, no `animation`, no `transform`, no keyframes. Two static snapshots at two viewport widths cannot express timing, easing, or gesture.
+
+This matters because motion is precisely where taste is hardest to articulate and most often wrong. So the pipeline closes the gap deliberately, in three tiers:
+
+**1. Static motion properties, mechanically.** Playwright MCP is installed and enabled, so `browser_evaluate` can read the declared motion off a live page:
+
+```js
+getComputedStyle(el).transitionProperty / transitionDuration /
+transitionTimingFunction / transitionDelay
+getComputedStyle(el).animationName / animationDuration /
+animationTimingFunction / animationIterationCount
+document.styleSheets → @keyframes rules
+```
+
+That yields the reference's **actual durations and cubic-beziers** — the exact values `MOTION.md` scores against — rather than an impression of "feels snappy". It also reveals the library in use: a `--sonner`/`--vaul` custom property or a `data-state="open"` attribute identifies the component's provenance.
+
+**2. Interaction states, by driving the page.** Playwright can `browser_hover`, `browser_click`, and `browser_press_key`, screenshotting before and after. That captures the states a static grab cannot: hover treatment, focus rings, open/closed menus, loading and error states. These are exactly the states `/ship` must generate and that a Figma frame never contains.
+
+**3. Timed capture for sequences.** Successive screenshots across a transition record its trajectory — where it starts, how it settles, whether it overshoots. Enough to classify the motion and reproduce it, though not a frame-accurate recording.
+
+**Honest limits.** This reads *declared* CSS motion. It does not capture JS-driven animation internals (a Framer Motion spring's stiffness and damping are computed at runtime, not declared), scroll-linked timelines in full, or physics parameters. For those, `animation-vocabulary` is the right instrument: the user describes the effect, that skill names it precisely, and `MOTION.md` supplies conforming values. Where a reference's motion cannot be measured it is recorded in `TASTE.md` as a described intent, explicitly flagged as inferred rather than measured — never presented as extracted fact.
 
 **Outputs**
 
-`TASTE.md` — 4–6 named hex values, type pairing with roles and scale ratio, spacing scale, density stance, motion appetite, signature-element policy, and an explicit **never** list.
+`TASTE.md` — 4–6 named hex values, type pairing with roles and scale ratio, spacing scale, density stance, motion appetite, signature-element policy, breakpoint behaviour, **icon set**, and an explicit **never** list.
+
+### Icon set is a taste decision, recorded once
+
+Icon style carries as much personality as typography, so `TASTE.md` records the chosen set and `/design` uses it for every icon rather than defaulting per screen. Mixed icon sets are one of the fastest ways a UI reads as assembled rather than designed, so the profile names exactly one primary set (a second is permitted only for a documented purpose, e.g. brand logos).
+
+**Iconsax specifically.** Verified against the Iconify API: neither `iconsax` nor `vuesax` exists in its 231 collections — searched by prefix, name, and author; both `/collection?prefix=` endpoints return *Not found*. Iconsax and Vuesax are the same project, and it simply is not hosted there. So for Iconsax the pipeline uses the **`<SVG>` path**: point `/taste` at a local Iconsax SVG directory or its npm package, and icons are imported as raw SVG. This is recorded in `TASTE.md` as the icon source, with a resolution order:
+
+```
+icon set = Iconify collection   → <Icon name="prefix:name">     (preferred: one call, no assets)
+icon set = local/npm SVG dir    → <SVG>                          (Iconsax and any unhosted set)
+```
+
+Iconsax's own variants (Linear, Bold, Broken, Outline, Two-tone, Bulk) map to subdirectories or filename suffixes in that source, and the chosen variant is pinned in the profile so all icons stay stylistically consistent.
+
+For users without a specific commitment, close Iconify-hosted alternatives offering the same variant axes are worth naming — `solar` (7,401 icons; Linear / Bold / Broken / Line-duotone / Bold-duotone / Outline) is the nearest match in structure, alongside `ph` (Phosphor, 9,072), `tabler` (6,184), `lucide` (1,756), and `heroicons` (1,288). These are suggestions surfaced during `/taste`, never a silent substitution: **the user's named set always wins**, and if it is unhosted the `<SVG>` path is used rather than quietly swapping in a lookalike.
+
+Hand-drawing icon paths is prohibited in all cases. It burns tokens and produces worse geometry than either path above.
 
 `registry.md` — component handles for `instantiate`, plus bound token names. This is the file that ends node-tree generation: composing by handle costs a fraction of emitting geometry.
 
@@ -457,6 +499,9 @@ The system is verified against Anthropic's stated method: run representative tas
 11b. **Registry generation** — run intake on a file containing three near-identical cards; assert `analyze clusters` surfaces them as a component candidate and that `registry.md` is generated rather than hand-written.
 11c. **Responsive intake** — run `analyze-url` at 390/834/1440; assert `TASTE.md` records the type scale, spacing, and reflow behaviour per breakpoint, and that breakpoint behaviour is scored in `RUBRIC.md`.
 11d. **JSX dialect correctness** — assert generated JSX uses `flex=`/`p=`/`bg=`/`rounded=` and never `layout=`/`padding=`/`fill=`/`cornerRadius=`, and that `eval` is never used to create visual nodes.
+11e. **Icon set adherence** — set `TASTE.md` to an Iconify collection and assert every icon uses that prefix with no mixing; then set it to a local Iconsax directory and assert the `<SVG>` path is used, no lookalike collection is silently substituted, and no icon path is hand-drawn.
+11f. **Motion extraction honesty** — run motion intake against a page with CSS transitions and assert real durations and timing functions are captured; run it against a page using JS-driven springs and assert the result is recorded as *inferred*, not presented as measured.
+11g. **Interaction-state capture** — drive a reference page with hover, focus, and click; assert the captured states inform the states `/ship` generates.
 12. **Cross-runtime** — run `/review` under Claude Code and under one non-Claude harness; assert both complete, and that where sub-agents or image input are unavailable the system degrades and *says so* rather than silently skipping.
 13. **Cost baseline** — record tokens for one screen built with the system versus without, to confirm the correction-turn saving is real.
 
