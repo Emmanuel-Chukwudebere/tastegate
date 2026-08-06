@@ -12,7 +12,7 @@ for t in "Default target is **React**" \
 has "$F" "Reanimated, curves ported to its easing API"
 has "$F" "Framer Motion only for spring physics, drag, or layout morphing"
 has "$F" "**Detect before asking.**"
-has "$F" "introduce a second styling paradigm into a project that has one"
+has "$F" "Never introduce a second styling paradigm into a project that has one"
 
 C=skills/design/RUNTIMES.md
 has "$C" 'Dispatch a sub-agent | `Agent` tool'

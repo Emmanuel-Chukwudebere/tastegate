@@ -4,9 +4,10 @@ Default target is **React**. The user may name another: `/claude-design:ship vue
 `… svelte`, `… react-native`, `… html`.
 
 **Detect before asking.** Read `package.json`, config files, and existing
-components to determine the framework and styling system already in use. Never
-introduce a second styling paradigm into a project that has one — if the project
-uses Tailwind, emit Tailwind; if it uses CSS modules, emit CSS modules.
+components to determine the framework and styling system already in use.
+Never introduce a second styling paradigm into a project that has one — if
+the project uses Tailwind, emit Tailwind; if it uses CSS modules, emit CSS
+modules.
 
 | Target | Styling | Motion |
 |---|---|---|
