@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:support.claude.com)",
+      "WebFetch(domain:claude.com)",
+      "WebFetch(domain:www.anthropic.com)"
+    ]
+  }
+}

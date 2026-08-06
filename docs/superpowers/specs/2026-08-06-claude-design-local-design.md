@@ -1,0 +1,327 @@
+# claude-design — a local Claude Design, grounded in your taste
+
+**Date:** 2026-08-06
+**Status:** approved design, ready for implementation planning
+
+## Problem
+
+Design work in Claude Code produces output that misses the author's taste, takes many turns, and burns tokens. Anthropic's hosted **Claude Design** product does noticeably better. It is unavailable here: the `/design-sync` and `/design-login` commands require reaching claude.ai, and per the Claude Code command reference, on Amazon Bedrock "the underlying tool can't reach claude.ai, so the command is unavailable." This environment runs on Bedrock (`CLAUDE_CODE_USE_BEDROCK=1`, `us-east-1`).
+
+The installed `frontend-design` skill does not close the gap. It is a single 1,332-word prose file with no `references/`, no `scripts/`, no component registry, and no verification step. Anthropic's own write-up (2025-11-12) describes it as roughly 400 tokens of taste guidance aimed at one-shot HTML. It is a prompt, not a system.
+
+### Why Claude Design outperforms it
+
+The hosted product does not use a better model. It wraps the same models in three mechanisms, both quoted from its product page:
+
+1. **Component grounding** — "Import from GitHub, design files, or your local codebase so Claude can build with your real components." It composes from a verified registry instead of inventing.
+2. **Closed-loop self-check** — "Claude checks its output against your design system, and makes corrections before you see it." The user only ever sees post-QA work.
+3. **Parallel explorations** — it generates multiple genuine directions at once rather than one guess refined through conversation.
+
+All three are reproducible locally. The gap is architectural, not model capability.
+
+### Root cause of the token cost
+
+Without a registry, every design decision is re-derived from scratch. Without a self-check, the user *is* the QA loop, correcting across many expensive Opus turns. The dominant cost is conversational correction, not generation.
+
+## Goals
+
+1. Match Claude Design's three mechanisms locally on Bedrock.
+2. Surpass it by grounding in the author's taste and enforcing motion and accessibility standards it does not check.
+3. Cut token cost by replacing conversational correction with registry composition and delegated QA.
+4. Ship as a reusable, releasable plugin where each project grows its own taste.
+
+## Non-goals
+
+- Reaching claude.ai or reviving `/design-sync`. Permanently blocked on Bedrock.
+- Replacing Figma's canvas. Figma is the better surface: real components, variants, variables.
+- A general-purpose Figma wrapper. This is a design-quality system that uses Figma.
+
+## Existing assets
+
+Verified present on this machine:
+
+| Asset | Status |
+|---|---|
+| `figma-ds-cli` v2.1.0 (silships/figma-cli), global | installed, unregistered with Claude Code |
+| Figma Desktop `app-126.7.10` | installed |
+| Node 26.6.0 / npm 11.18.0 | installed |
+| Bedrock routing, Opus 5 / Sonnet 5 / Haiku 4.5 | configured |
+| `frontend-design` plugin | enabled, insufficient |
+
+`figma-cli` already provides every primitive this system needs. It ships a 4,021-word `CLAUDE.md` and a 664-line `REFERENCE.md`, and is currently wired into nothing.
+
+Commands verified against `REFERENCE.md`:
+
+- **Grounding** — `spec` (reuse handle), `instantiate` (use existing, don't rebuild), `extract` → `DESIGN.md`, `import` (tailwind config / CSS vars / `tokens.json` / Storybook)
+- **Sight** — `render --verify` and `render-batch --verify` return a screenshot JSON in the same call (line 352); `export screenshot` standalone (line 188)
+- **Reference intake** — `gradient extract <image>` pulls real colors/gradients from an image; `analyze-url --screenshot` and `screenshot-url` ingest live sites (lines 231–232)
+- **Explorations** — `render-batch`, `variants`, `combos`, `blocks create`
+- **Audit** — `verify`, `a11y audit`, `a11y contrast`, `a11y vision`, `a11y touch`, `a11y text`
+- **Safety** — `undo`
+
+## Architecture
+
+One plugin, five skills, two tiers of standards.
+
+```
+C:\Users\imman\GitHub\Design\           (the plugin repo, git-versioned)
+├── .claude-plugin/plugin.json
+├── skills/
+│   ├── design-taste/SKILL.md           → /taste
+│   ├── design-explore/SKILL.md         → /explore
+│   ├── design-build/SKILL.md           → /design
+│   ├── design-review/SKILL.md          → /review
+│   └── design-ship/SKILL.md            → /ship
+├── standards/                          SHIPPED — universal craft
+│   ├── MOTION.md                       numeric extract; defers to Emil's skills
+│   ├── TYPOGRAPHY.md                   Emil's 7 rules, scored
+│   ├── RUBRIC.md                       0–5 scoring checklist
+│   ├── SLOP.md                         AI-default catalogue
+│   └── FRAMEWORKS.md                   per-target emit + motion bindings
+└── scripts/                            deterministic helpers
+```
+
+**External dependency (optional, recommended):** `emilkowalski/skills` (MIT), installed via `npx skills@latest add emilkowalski/skills`. When present it is authoritative for motion and interaction; when absent the shipped standards still enforce the rules. See Component 7.
+
+Per-project, generated by `/taste` in whatever repo is being designed:
+
+```
+<consuming project>/.claude/design/     PROJECT — taste, not shipped
+├── TASTE.md
+└── registry.md
+```
+
+### Why standards split into two tiers
+
+Motion physics, the scoring rubric, and the AI-slop catalogue are universally true — they ship in the box. Taste is per-project: a fintech dashboard and a children's app must not share `TASTE.md`. Splitting the tiers is what makes the plugin releasable, and lets one author keep different taste per project.
+
+### Progressive disclosure
+
+Per Anthropic's skill-authoring guidance, a skill's body loads only when triggered, so "long reference material costs almost nothing until you need it." Skill bodies stay thin and point at standards files. Sub-agents read only the standard relevant to their pass. Idle cost of the whole system is approximately zero.
+
+### Skills
+
+| Skill | Command | Purpose |
+|---|---|---|
+| `design-taste` | `/taste` | Build or update `TASTE.md` + `registry.md` |
+| `design-explore` | `/explore` | 3 genuinely different directions in parallel |
+| `design-build` | `/design` | Compose from registry, auto-QA, then show |
+| `design-review` | `/review` | Standalone scored audit of existing work |
+| `design-ship` | `/ship` | Pixel-perfect Figma → code, framework of choice |
+
+Descriptions must state **only triggering conditions**, never workflow summaries. The `writing-skills` guidance documents that a description summarizing workflow becomes a shortcut agents take instead of reading the skill body.
+
+## Component 1 — `design-taste` (`/taste`)
+
+Establishes what "good" means for one project. Everything else depends on it, so it ships first.
+
+Five intake modes, combinable in one profile:
+
+1. **Reference images** — local screenshots. `gradient extract` pulls real hex values and gradient geometry out of the image rather than having Claude guess them.
+2. **Live URLs** — `analyze-url --screenshot` / `screenshot-url`.
+3. **Figma moodboard page** — `extract --pages "Moodboard"` reads a curated page directly off the canvas.
+4. **Existing Figma file / design system** — `extract` → `DESIGN.md`, becomes `registry.md`.
+5. **Code or brand tokens** — `import tailwind.config.js` / `globals.css` / `tokens.json` / Storybook URL.
+
+Plus **interview mode** when no references exist: a fixed question set covering typography temperament, density, color, motion appetite, and explicit dislikes. Interview mode is what makes the plugin usable on day one by someone with nothing prepared.
+
+**Outputs**
+
+`TASTE.md` — 4–6 named hex values, type pairing with roles and scale ratio, spacing scale, density stance, motion appetite, signature-element policy, and an explicit **never** list.
+
+`registry.md` — component handles for `instantiate`, plus bound token names. This is the file that ends node-tree generation: composing by handle costs a fraction of emitting geometry.
+
+Re-running `/taste` **amends** rather than overwrites, so the profile compounds as more references arrive.
+
+## Component 2 — `design-build` (`/design`)
+
+The core loop, mirroring Claude Design's "corrections before you see it."
+
+```
+1. LOAD    registry.md + TASTE.md          handles, not node trees
+2. PLAN    tokens + ASCII wireframe        in thinking; cheap to discard
+3. BUILD   figma-cli render-batch --verify builds AND screenshots in one call
+4. QA      Sonnet 5 sub-agent: screenshot + RUBRIC + MOTION → scored findings
+5. FIX     apply fixes, re-verify
+6. SHOW    user sees only post-QA output
+```
+
+Step 3 matters for cost: `--verify` returns the screenshot in the same call, so seeing the result costs no extra round trip.
+
+**Never generate a component that exists in `registry.md`.** Check `spec <name>` first; if a handle exists, `instantiate` it.
+
+## Component 3 — the QA loop, at Sonnet 5
+
+The requirement is Opus-depth critique at lower cost. The resolution: **critique depth comes from the rubric, not from model priors.** The sub-agent is not asked "does this look good" — it scores against explicit, numeric criteria.
+
+`RUBRIC.md` — each dimension scored 0–5, every finding requiring cited evidence and an exact fix:
+
+- **Typography** — scale ratio present, display ≠ body family, weight contrast ≥ 400
+- **Palette** — matches `TASTE.md` values, accent restricted to ≤ 2 placements
+- **Spacing** — every value on the scale, optical alignment held
+- **Hierarchy** — one focal point, signature element present
+- **Motion** — delegated to `MOTION.md`
+- **Accessibility** — contrast, touch targets, reduced motion (cross-checked with `a11y audit`)
+- **Slop** — delegated to `SLOP.md`
+
+`MOTION.md` — Emil Kowalski's standards, already numeric and therefore machine-checkable:
+
+- Frequency table: 100+/day → no animation ever; keyboard-initiated actions never animate
+- Easing order: entry/exit `ease-out`; moving/morphing `ease-in-out`; hover/color `ease`; constant `linear`. **`ease-in` on UI is banned.**
+- Curves: `ease-out: cubic-bezier(0.23, 1, 0.32, 1)`; `ease-in-out: cubic-bezier(0.77, 0, 0.175, 1)`; `ease-drawer: cubic-bezier(0.32, 0.72, 0, 1)`
+- Durations: button press 100–160ms; tooltip/popover 125–200ms; dropdown 150–250ms; modal/drawer 200–500ms; **UI stays under 300ms**
+- Physicality: never `scale(0)` — use `scale(0.9–0.97)` + `opacity: 0`; popovers scale from trigger via `transform-origin`, modals exempt; `:active` `scale(0.97)` at 160ms `ease-out`
+- Performance: animate **only** `transform` and `opacity`; never `width`/`height`/`margin`/`padding`/`top`/`left`; never drive child transforms from a parent CSS variable; Framer Motion shorthands (`x`/`y`/`scale`) drop frames — use full `transform` strings
+- Gesture: momentum dismissal at velocity > ~0.11; boundary damping; pointer capture; ignore extra touch points mid-drag
+- Accessibility: `prefers-reduced-motion` keeps opacity and drops transforms — "fewer and gentler, not zero"; gate hover behind `@media (hover: hover) and (pointer: fine)`
+- Stagger: 30–80ms between items, never blocking interaction
+
+`SLOP.md` — the three AI-default clusters named in the `frontend-design` skill, treated as automatic findings unless the brief explicitly asks for one: warm cream (~#F4F1EA) + high-contrast serif + terracotta accent; near-black + single acid-green or vermilion accent; broadsheet with hairline rules, zero radius, dense columns. Plus purple-gradient-on-white, and unjustified `01 / 02 / 03` numbering.
+
+**Output format:** full prose findings with cited evidence and exact fixes — explicitly *not* a terse list. The depth requirement is met by the rubric; the cost saving comes from *where* the pass runs. The screenshot and standards load into the sub-agent's context; only findings return to the main Opus session. Depth is preserved without paying Opus rates to read pixels.
+
+**Escalation:** if any dimension scores ≤ 2 on two consecutive passes, that pass escalates to Opus. Sonnet 5 handles the common case; Opus handles genuinely hard taste calls.
+
+**Termination:** maximum 3 QA passes per build. On exit, report remaining findings rather than looping silently.
+
+## Component 4 — `design-explore` (`/explore`)
+
+Three genuinely different directions built as real Figma frames via `render-batch`, fanned out across parallel sub-agents. Each direction gets its own token set and signature element; each is checked against `SLOP.md` so the three are not variations on one default.
+
+The user picks one; the winner is written into `TASTE.md` as the locked direction for the project.
+
+This front-loads taste alignment. Three upfront directions replace the long correction thread that dominates current cost.
+
+## Component 5 — `design-review` (`/review`)
+
+The QA loop as a standalone command, runnable against Figma frames or a React codebase. Same rubric, same Sonnet 5 delegation, same escalation rule. Read-only: emits a prioritized report and an implementation plan, never blind edits.
+
+## Component 6 — `design-ship` (`/ship`) — pixel-perfect design-to-code
+
+The second half of the round trip, and a first-class deliverable rather than an afterthought. Requirement: **pixel-perfect conversion**, with the target framework chosen by the user.
+
+### Framework targets
+
+Default **React**. The user may specify another target (`/ship vue`, `/ship svelte`, `/ship react-native`, `/ship html`). Framework choice affects only the emit layer; extraction, verification, and the motion contract are framework-agnostic. Each target declares its styling and motion bindings:
+
+| Target | Styling | Motion |
+|---|---|---|
+| React (default) | CSS variables, or Tailwind if the project uses it | CSS transitions; Framer Motion only where spring physics or gestures are needed |
+| Vue / Svelte | same token variables | native transitions, same curves |
+| React Native | StyleSheet from the same tokens | Reanimated, curves ported |
+| Plain HTML | CSS variables | CSS transitions |
+
+Detect the project's existing framework and styling system before asking. Never introduce a second styling paradigm into a project that already has one.
+
+### Why pixel-perfect is achievable here
+
+Conversion is measurement, not interpretation. Because the design was composed from registry handles with bound tokens, the geometry is already exact and machine-readable:
+
+1. **Extract** — `figma-cli extract --selection` yields structure, bound token names, and Auto Layout values (padding, gap, alignment, constraints). Auto Layout maps directly onto flexbox; this is the mechanism that makes fidelity mechanical rather than eyeballed.
+2. **Map** — registry handle → existing project component; bound Figma variable → CSS variable of the same name. A shared token namespace across Figma and code is what keeps the two from drifting.
+3. **Emit** — write the component in the target framework, deriving every value from tokens. Zero raw hex values, zero magic numbers.
+4. **Verify visually** — screenshot the built UI (Playwright MCP is installed and enabled) at the same viewport as the Figma frame, and diff it against the frame screenshot from `render --verify`. Findings are geometric: spacing deltas, type-size mismatches, color drift.
+5. **Correct and re-verify** — loop until the diff is clean or 3 passes elapse, then report residual deltas honestly.
+
+Step 4 is the part conventional Figma-to-code tools omit, and the reason their output is approximate. Both sides can be screenshotted, so fidelity is checkable rather than asserted.
+
+### Motion and interaction on conversion
+
+A static frame cannot express motion, so the motion layer is authored at ship time, governed by `MOTION.md` and Emil's skills. The frequency matrix is applied per element: a command-palette toggle gets no animation; a modal gets 200–500ms `ease-out`; a first-run celebration may get delight. Interaction states absent from the Figma frame — `:hover` gated behind `@media (hover: hover) and (pointer: fine)`, `:active` at `scale(0.97)`/160ms, `:focus-visible`, disabled, loading, empty, and error — are generated as part of shipping, since a design frame rarely contains them and their absence is what makes converted code feel unfinished.
+
+Library selection follows `pick-ui-library`: never hand-roll a toast, drawer, or popover when a vetted library exists. Hand-rolled versions reliably carry accessibility, z-index, and focus-management defects.
+
+### Round-trip integrity
+
+`/ship` closes the loop by running the same `RUBRIC.md` against the built result, so code is held to the standard the design was held to. If code and Figma diverge later, the shared token namespace makes the drift detectable.
+
+## Component 7 — Emil Kowalski's skills as the motion and interaction layer
+
+`emilkowalski/skills` is **MIT licensed**, 26k stars, last pushed 2026-08-05 — actively maintained, and safe to depend on in a released plugin.
+
+Install: `npx skills@latest add emilkowalski/skills`
+
+Rather than paraphrasing his rules, this plugin **delegates to them** and orchestrates when each applies. Paraphrasing would go stale; his repo is updated frequently.
+
+| Emil skill | Role in this pipeline |
+|---|---|
+| `emil-design-eng` | Master motion and design-engineering ruleset; the authority `MOTION.md` defers to |
+| `animate` | Authoring motion at `/ship` time with correct curves, durations, properties |
+| `review-animations` | Adversarial motion audit inside the `/review` and `/ship` QA passes |
+| `improve-animations` | Repo-wide motion audit producing prioritized plans (read-only) |
+| `find-animation-opportunities` | Where motion is genuinely warranted — and where it must be refused |
+| `animation-vocabulary` | Translates vague requests ("make it pop") into exact curves and durations |
+| `apple-design` | Direct manipulation, velocity handoff, spring mechanics, materials — for briefs wanting a native feel |
+| `pick-ui-library` | Prevents hand-rolled toasts, drawers, popovers at `/ship` |
+| `prototype` | Multiple live interactive versions; complements `/explore` at the code layer |
+
+`MOTION.md` remains in the plugin as the **enforceable numeric extract** used for scoring, because the QA sub-agent needs thresholds in context to score against without loading the full skill set. If Emil's skills are installed, they are authoritative and `MOTION.md` defers to them; if absent, `MOTION.md` alone still enforces the standard. The plugin degrades gracefully rather than hard-failing.
+
+### Typography rules from `agents-with-taste`
+
+Emil's article adds seven typography rules absent from the original rubric. These fold into `RUBRIC.md` as scored criteria: line length capped near 65 characters; tabular alignment for numbers; explicit truncation handling; letter-spacing on uppercase; complete font fallback stacks; deliberate underline usage; and a single clear emphasis hierarchy.
+
+His durations are tighter than the standards file in places — 100–150ms micro-interactions, 150–250ms standard UI, 200–300ms modals. Where the two disagree, the **tighter bound wins**, consistent with his stated principle: "set the rules, be *strict*."
+
+The article's thesis is the justification for this entire architecture: *"If you know what great feels like, describe the rules, then give them to your agents so they can follow them."*
+
+## Token economics
+
+| Lever | Mechanism |
+|---|---|
+| Registry composition | `instantiate "Button"` instead of emitting node trees |
+| Progressive disclosure | skills and standards load only when triggered |
+| Deterministic work in scripts | per Anthropic: "sorting a list via token generation is far more expensive than simply running a sorting algorithm" |
+| Delegated QA | screenshots and standards never enter the main Opus context |
+| `--verify` in one call | build and screenshot without an extra round trip |
+| Upfront explorations | replaces multi-turn correction |
+
+The trade is deliberate: more compute per design pass, far fewer expensive conversational turns.
+
+**Not doing:** capping `CLAUDE_CODE_MAX_OUTPUT_TOKENS` globally. Design generation writes long files; a low cap truncates mid-file and forces regeneration, costing more. Caps belong on sub-agents, not the main loop.
+
+## Error handling
+
+- **Figma Desktop not running** — `figma-cli connect` fails fast with instructions; never proceed blind.
+- **Missing `TASTE.md`** — `/design` and `/explore` refuse and direct the user to `/taste`. Grounding is mandatory; this is the whole thesis.
+- **Empty `registry.md`** — permitted, with a warning that output will be generated rather than composed.
+- **`--verify` returns no screenshot** — fall back to `export screenshot`; if that fails, report honestly that the QA pass could not run. Never claim verification that did not happen.
+- **Bad build** — `figma-cli undo`.
+- **Sub-agent failure** — surface it; do not silently skip QA.
+- **Emil's skills not installed** — proceed on `MOTION.md` and `TYPOGRAPHY.md`, noting once that installing them raises the ceiling. Never hard-fail on an optional dependency.
+- **Unsupported `/ship` target** — state which targets are supported and stop, rather than guessing at an unfamiliar framework's idioms.
+- **Pixel diff cannot run** (no dev server, Playwright unavailable) — emit the code, then state plainly that visual verification did not run. Never imply verified fidelity that was not measured.
+
+## Verification
+
+The system is verified against Anthropic's stated method: run representative tasks, identify gaps, iterate.
+
+1. **Registry compliance** — build a form with `registry.md` populated; assert zero raw hex values and zero from-scratch components where a handle existed.
+2. **Motion rubric** — plant known violations (`ease-in` on entry, 450ms dropdown, `scale(0)` entry, animated `height`); assert `/review` catches every one.
+3. **Slop detection** — request a generic landing page; assert the default cluster is flagged.
+4. **Taste adherence** — build against a `TASTE.md` with distinctive values; assert output uses those values and nothing off-profile.
+5. **Escalation** — force a dimension to score ≤ 2 twice; assert escalation to Opus fires.
+6. **Pixel fidelity** — ship a Figma frame to React, screenshot both at one viewport, diff them; assert spacing, type size, and color match within tolerance, and that residual deltas are reported rather than hidden.
+7. **Framework targeting** — run `/ship` against a Vue project and a Tailwind React project; assert the emitted code follows each project's existing styling paradigm and introduces no second one.
+8. **Interaction completeness** — assert shipped components include hover (correctly gated), active, focus-visible, disabled, loading, empty, and error states even when absent from the Figma frame.
+9. **Graceful degradation** — run the motion audit with `emilkowalski/skills` absent; assert `MOTION.md` alone still catches planted violations.
+10. **Cost baseline** — record tokens for one screen built with the system versus without, to confirm the correction-turn saving is real.
+
+Per `writing-skills`, skills are tested with sub-agents against these cases before the plugin is considered done.
+
+## Build order
+
+Taste precedes build, or there is nothing to ground against.
+
+1. `plugin.json` + `standards/` (`MOTION.md`, `TYPOGRAPHY.md`, `RUBRIC.md`, `SLOP.md`, `FRAMEWORKS.md`) + register in `settings.json`
+2. `design-taste` — including interview mode, so the plugin works with no references prepared
+3. `design-build` — the auto-QA loop; core value
+4. `design-ship` — pixel-perfect conversion with the motion layer; the other half of the round trip
+5. `design-explore`
+6. `design-review`
+
+Milestone 3 is the first point of real payoff. Milestones 1–4 are the minimum shippable system, since the round trip is a stated requirement.
+
+## Open items deferred by decision
+
+- `TASTE.md` for this repo is scaffolded as a documented template now; `/taste` interview mode populates it in a later session. This was chosen deliberately so that release users build their own taste per project.
