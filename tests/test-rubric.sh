@@ -6,10 +6,10 @@ has() { if grep -qiF "$2" "$1" 2>/dev/null; then echo "  PASS: $1 has '$2'"; PAS
 R=skills/design/RUBRIC.md
 for d in Typography Palette Spacing Hierarchy Motion Accessibility Slop Breakpoint; do has "$R" "$d"; done
 has "$R" "0-5"
-has "$R" "evidence"
+has "$R" "the score, cited evidence (what you"
 has "$R" "MOTION.md"
 has "$R" "TYPOGRAPHY.md"
-has "$R" "escalate"
+has "$R" "escalate that pass to"
 
 S=skills/design/SLOP.md
 has "$S" "#F4F1EA"

@@ -13,8 +13,8 @@ has "$M" "0.11"
 has "$M" "scale(0.97)"
 has "$M" "prefers-reduced-motion"
 has "$M" "(hover: hover) and (pointer: fine)"
-has "$M" "transform"
-has "$M" "opacity"
+has "$M" "Animate **only \`transform\`"
+has "$M" "\`opacity\`**. These skip layout and paint"
 
 T=skills/design/TYPOGRAPHY.md
 has "$T" "65"
