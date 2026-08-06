@@ -52,14 +52,36 @@ Verified present on this machine:
 
 `figma-cli` already provides every primitive this system needs. It ships a 4,021-word `CLAUDE.md` and a 664-line `REFERENCE.md`, and is currently wired into nothing.
 
-Commands verified against `REFERENCE.md`:
+Commands verified live against `--help`, not inferred from docs:
 
-- **Grounding** — `spec` (reuse handle), `instantiate` (use existing, don't rebuild), `extract` → `DESIGN.md`, `import` (tailwind config / CSS vars / `tokens.json` / Storybook)
-- **Sight** — `render --verify` and `render-batch --verify` return a screenshot JSON in the same call (line 352); `export screenshot` standalone (line 188)
-- **Reference intake** — `gradient extract <image>` pulls real colors/gradients from an image; `analyze-url --screenshot` and `screenshot-url` ingest live sites (lines 231–232)
-- **Explorations** — `render-batch`, `variants`, `combos`, `blocks create`
-- **Audit** — `verify`, `a11y audit`, `a11y contrast`, `a11y vision`, `a11y touch`, `a11y text`
-- **Safety** — `undo`
+- **Grounding** — `spec <component>` reads a component's authoritative spec from `DESIGN.md`, and **`spec --check <nodeId>` enforces it, exiting 1 on violation** with a `--tolerance` in px; `instantiate <name>` drops an instance of an existing component; `extract` writes `DESIGN.md` with 12 selectable sections (`identity, structure, color, variables, typography, spacing, depth, components, states, rules, extending, tokens`), `--split` emitting full per-page trees; `import` accepts `DESIGN.md`, `tailwind.config.js`, CSS variables, design-tokens JSON, or a Storybook URL
+- **Mechanical emit** — `export css`, `export tailwind`, `export dtcg`, `export-jsx`, `export-storybook`
+- **Sight** — `render --verify` / `render-batch --verify` return a screenshot in the same call; `verify [nodeId]` takes a small screenshot for AI verification with `--base64` for inline
+- **Reference intake** — `analyze-url` extracts **exact CSS values** via Playwright with `-w`/`-h` viewport control; `screenshot-url` imports a site screenshot into Figma; `recreate-url` rebuilds a page in Figma; `gradient extract <image>` pulls real gradients from an image
+- **Design analysis** — `analyze colors`, `analyze typography`, `analyze spacing`, and **`analyze clusters` (finds repeated patterns — i.e. component candidates)**, all with `--json`
+- **Audit** — `lint --fix --json`; `a11y audit / contrast / vision / touch / text / focus`
+- **Systematisation** — `node to-component`, `sizes` (S/M/L variants), `slot create|convert|add|preferred`, `use|theme` (rebind a selection to another collection for light/dark), `unwrap` (fix an LLM bundling N items into one component), `unstack` / `arrange` (non-destructive overlap repair)
+- **Batch efficiency** — `set-batch`, `bind-batch`, `rename-batch`, `delete-batch`, `var create-batch`; fill/stroke accept `var:name` references that **stay bound**, so theme switching keeps working
+- **Safety** — `undo` removes nodes from the last render; `status` / `diagnose` for connection health
+
+Three of these were not in the original design and change it materially:
+
+1. **`spec --check <nodeId>`** — a deterministic, exit-code registry-compliance gate. Design-system conformance becomes a hard check rather than something the QA model eyeballs. This is the enforcement layer the `claude2figma` approach hand-rolls, already built in.
+2. **`analyze clusters --json`** — detects repeated patterns, so `registry.md` can be **generated** from an existing file instead of hand-authored, and drift ("three near-identical cards that should be one component") is detectable.
+3. **`lint --fix --json`** — mechanical issue repair before any model-based critique runs, so the QA pass spends its attention on taste rather than on mechanical defects a tool can fix for free.
+
+### The JSX dialect
+
+`render` uses a specific dialect that must be documented in the plugin, since it is the single most likely source of failed calls:
+
+- **Elements** — `<Frame> <Rectangle> <Ellipse> <Text> <Line> <Image> <SVG> <Icon>`
+- **Layout** — `flex="row|col"`, `gap`, `justify`, `items`, `wrap`, `w="fill"`, `minW`/`maxW`
+- **Spacing** — `p`, `px`/`py`, `pt`/`pr`/`pb`/`pl`
+- **Appearance** — `bg`, `stroke`, `strokeWidth`, `opacity`, `rounded`, `shadow`, `blur`
+- **Native effects** — `noise`, `texture`, `progressiveBlur`, `glass` (with refraction/depth/radius/dispersion/light controls)
+- **Icons** — `<Icon>` pulls from Iconify (e.g. `lucide:star`), so icons are never hand-drawn as paths
+
+Documented gotchas, each a real failure mode: `layout="horizontal"` → `flex="row"`; `padding={24}` → `p={24}`; `fill="#fff"` → `bg="#fff"`; `cornerRadius={12}` → `rounded={12}`. And a hard rule from the tool's own `CLAUDE.md`: **never use `eval` to create visual nodes** — it bypasses positioning, name dedup, constraints, and every safety guard.
 
 ## Architecture
 
@@ -79,7 +101,8 @@ C:\Users\imman\GitHub\Design\           (the plugin repo, git-versioned)
 │   ├── TYPOGRAPHY.md                   Emil's 7 rules, scored
 │   ├── RUBRIC.md                       0–5 scoring checklist
 │   ├── SLOP.md                         AI-default catalogue
-│   └── FRAMEWORKS.md                   per-target emit + motion bindings
+│   ├── FRAMEWORKS.md                   per-target emit + motion bindings
+│   └── FIGMA-CLI.md                    JSX dialect, gotchas, command map
 ├── references/runtimes/                cross-harness action→tool mapping
 │   ├── claude-code.md
 │   ├── codex.md
@@ -132,11 +155,31 @@ Five intake modes, combinable in one profile:
 
 Plus **interview mode** when no references exist: a fixed question set covering typography temperament, density, color, motion appetite, and explicit dislikes. Interview mode is what makes the plugin usable on day one by someone with nothing prepared.
 
+### URL intake — exact values, not impressions
+
+`analyze-url <url>` uses Playwright to *"extract exact CSS values"*, and takes `-w` / `-h` viewport flags plus `--screenshot`. This is materially better than screenshot-only intake: the reference contributes **real computed CSS** — actual type scales, spacing values, colors — rather than Claude's estimate of what a picture looks like.
+
+Responsive intake follows from the viewport flags. A reference is captured at three widths, so `TASTE.md` records how the direction *behaves*, not just how it looks at one size:
+
+```
+analyze-url <url> -w 390  --screenshot     mobile
+analyze-url <url> -w 834  --screenshot     tablet
+analyze-url <url> -w 1440 --screenshot     desktop
+```
+
+What this yields per reference: exact type scale and its ratio across breakpoints, real spacing rhythm, true colors (no eyedropper guessing), and the reflow strategy — what stacks, what hides, where columns collapse. Breakpoint behaviour is then a first-class part of the taste profile and a scored dimension in `RUBRIC.md`, rather than something discovered late at ship time.
+
+Two related commands support intake: `screenshot-url` imports a site screenshot into Figma as a reference on the canvas, and `recreate-url` rebuilds a page in Figma at 1440px — useful for studying a reference's structure as editable layers, never for shipping someone else's design.
+
 **Outputs**
 
 `TASTE.md` — 4–6 named hex values, type pairing with roles and scale ratio, spacing scale, density stance, motion appetite, signature-element policy, and an explicit **never** list.
 
 `registry.md` — component handles for `instantiate`, plus bound token names. This is the file that ends node-tree generation: composing by handle costs a fraction of emitting geometry.
+
+The registry is **generated, not hand-authored**: `extract --sections components` yields the variant matrices, and `analyze clusters --json` surfaces repeated patterns that *should* be components but aren't yet. The second is a design-system health check as much as an intake step — three near-identical cards on a canvas are a component waiting to be named, and it reports them.
+
+Each entry records the handle for `instantiate`, its variant axes, and its bound tokens, so `spec --check` can later enforce it mechanically.
 
 Re-running `/taste` **amends** rather than overwrites, so the profile compounds as more references arrive.
 
@@ -145,15 +188,20 @@ Re-running `/taste` **amends** rather than overwrites, so the profile compounds 
 The core loop, mirroring Claude Design's "corrections before you see it."
 
 ```
-1. LOAD    registry.md + TASTE.md          handles, not node trees
-2. PLAN    tokens + ASCII wireframe        in thinking; cheap to discard
-3. BUILD   figma-cli render-batch --verify builds AND screenshots in one call
-4. QA      Sonnet 5 sub-agent: screenshot + RUBRIC + MOTION → scored findings
-5. FIX     apply fixes, re-verify
-6. SHOW    user sees only post-QA output
+1. LOAD    registry.md + TASTE.md            handles, not node trees
+2. PLAN    tokens + ASCII wireframe          in thinking; cheap to discard
+3. BUILD   figma-cli render-batch --verify   builds AND screenshots in one call
+4. GATE    lint --fix  +  spec --check       deterministic; free; no model
+5. QA      Sonnet 5 sub-agent: screenshot + RUBRIC + MOTION → scored findings
+6. FIX     apply fixes, re-verify
+7. SHOW    user sees only post-QA output
 ```
 
 Step 3 matters for cost: `--verify` returns the screenshot in the same call, so seeing the result costs no extra round trip.
+
+**Step 4 is a cost multiplier and must run before step 5.** `lint --fix` repairs mechanical defects for free, and `spec --check <nodeId>` enforces registry conformance with an exit code. Both are deterministic — zero model tokens. Only what survives these gates reaches the QA model, so the expensive pass spends its attention on taste and motion instead of on problems a tool already catches. Running the model first would be paying Sonnet to find what `lint` finds free.
+
+A `spec --check` failure is a hard stop, not a finding: the build is off-spec and must be corrected before critique is worth running.
 
 **Never generate a component that exists in `registry.md`.** Check `spec <name>` first; if a handle exists, `instantiate` it.
 
@@ -225,13 +273,39 @@ Detect the project's existing framework and styling system before asking. Never 
 Conversion is measurement, not interpretation. Because the design was composed from registry handles with bound tokens, the geometry is already exact and machine-readable:
 
 1. **Extract** — `figma-cli extract --selection` yields structure, bound token names, and Auto Layout values (padding, gap, alignment, constraints). Auto Layout maps directly onto flexbox; this is the mechanism that makes fidelity mechanical rather than eyeballed.
-2. **Emit tokens mechanically** — `figma-cli export css`, `export tailwind`, or `export dtcg` writes the variables straight out of Figma as CSS custom properties, a Tailwind config, or W3C DTCG JSON. Verified live against `export --help`. This is the highest-leverage step in the pipeline: **the token layer is generated by the tool, not by the model.** Zero tokens spent, zero transcription errors, and exactly the deterministic-work-belongs-in-scripts principle Anthropic's authoring guidance calls for. Claude writes only structure and behaviour; values come from Figma verbatim.
+2. **Emit mechanically, in three layers** — `export-jsx --pretty` for the structural scaffold, `export css` / `export tailwind` / `export dtcg` for token values, `export-storybook` for the catalogue where applicable. All verified live. **Structure and values are generated by the tool, not the model.** Zero tokens spent on them, zero transcription errors — exactly the deterministic-work-belongs-in-scripts principle Anthropic's authoring guidance calls for. See "Three layers of mechanical export" below for what this does and does not cover.
 3. **Map** — registry handle → existing project component; bound Figma variable → the CSS variable of the same name emitted in step 2. A shared token namespace across Figma and code is what keeps the two from drifting.
 4. **Emit** — write the component in the target framework, referencing the variables from step 2. Zero raw hex values, zero magic numbers.
 5. **Verify visually** — screenshot the built UI (Playwright MCP is installed and enabled) at the same viewport as the Figma frame, and diff it against the frame screenshot from `render --verify`. Findings are geometric: spacing deltas, type-size mismatches, color drift.
 6. **Correct and re-verify** — loop until the diff is clean or 3 passes elapse, then report residual deltas honestly.
 
 Step 5 is the part conventional Figma-to-code tools omit, and the reason their output is approximate. Both sides can be screenshotted, so fidelity is checkable rather than asserted.
+
+### Three layers of mechanical export
+
+Export is not limited to tokens. Verified live, `figma-cli` emits three distinct layers, and each one the tool produces is one the model does not have to write:
+
+| Layer | Command | Output |
+|---|---|---|
+| **Tokens** | `export css` / `export tailwind` / `export dtcg` | CSS custom properties, Tailwind config, DTCG JSON |
+| **Components / screens** | `export-jsx [nodeId] --pretty` | JSX/React structure for any node or full screen |
+| **Component catalogue** | `export-storybook [nodeId]` | Storybook stories per component |
+
+Plus `extract --sections components` for variant matrices and `--split` for full per-page trees under `DESIGN-structure/`.
+
+**How `export-jsx` is used, and its honest limits.** It takes only `--output` and `--pretty` — no framework target, no token-binding flag. So it produces a *structural scaffold*: correct hierarchy, correct nesting, correct layout intent, straight from the canvas. It does not produce idiomatic framework code, token-bound values, interaction states, or motion.
+
+The pipeline therefore treats it as **step zero of emit, not a replacement for it**:
+
+```
+export-jsx        → structure scaffold      (tool: free, exact)
+export css/dtcg   → token values           (tool: free, exact)
+Claude            → framework idiom, token binding, states, motion
+```
+
+Claude's job shrinks to the part that genuinely needs judgement. Structure and values arrive exact; the model spends its tokens on interaction, accessibility, and motion. This is the single largest cost reduction in the pipeline, and it is why fidelity is achievable: the geometry is never re-derived.
+
+`export-storybook` is emitted alongside shipped components when the project uses Storybook, giving the catalogue for free.
 
 ### Tokens as the round-trip spine
 
@@ -338,6 +412,10 @@ Skills are authored to **request capabilities, not name tools**: "dispatch a rea
 |---|---|
 | Registry composition | `instantiate "Button"` instead of emitting node trees |
 | Tokens emitted by tool | `export css` / `tailwind` / `dtcg` — the entire value layer costs zero model tokens |
+| Structure emitted by tool | `export-jsx` scaffolds hierarchy; the model writes only idiom, states, motion |
+| Deterministic gates first | `lint --fix` and `spec --check` run before the QA model, so it never spends attention on mechanically detectable defects |
+| Batch operations | `set-batch` / `bind-batch` / `rename-batch` / `create-batch` — one call instead of N |
+| Exact CSS from references | `analyze-url` returns real computed values, removing guess-then-correct cycles |
 | Progressive disclosure | skills and standards load only when triggered |
 | Deterministic work in scripts | per Anthropic: "sorting a list via token generation is far more expensive than simply running a sorting algorithm" |
 | Delegated QA | screenshots and standards never enter the main Opus context |
@@ -375,6 +453,10 @@ The system is verified against Anthropic's stated method: run representative tas
 9. **Graceful degradation** — run the motion audit with `emilkowalski/skills` absent; assert `MOTION.md` alone still catches planted violations.
 10. **Emil sequence enforced** — run `/ship` on a component needing a toast and a drawer; assert `find-animation-opportunities` and `pick-ui-library` ran *before* any component code was written, and that no toast or drawer was hand-rolled.
 11. **Token export fidelity** — compare `export css` output against the Figma variables; assert every value matches and that no token value was transcribed by the model.
+11a. **Deterministic gates run first** — plant a lintable defect and an off-spec component; assert `lint --fix` and `spec --check` both run *before* the QA sub-agent is dispatched, and that a `spec --check` non-zero exit halts the build rather than proceeding to critique.
+11b. **Registry generation** — run intake on a file containing three near-identical cards; assert `analyze clusters` surfaces them as a component candidate and that `registry.md` is generated rather than hand-written.
+11c. **Responsive intake** — run `analyze-url` at 390/834/1440; assert `TASTE.md` records the type scale, spacing, and reflow behaviour per breakpoint, and that breakpoint behaviour is scored in `RUBRIC.md`.
+11d. **JSX dialect correctness** — assert generated JSX uses `flex=`/`p=`/`bg=`/`rounded=` and never `layout=`/`padding=`/`fill=`/`cornerRadius=`, and that `eval` is never used to create visual nodes.
 12. **Cross-runtime** — run `/review` under Claude Code and under one non-Claude harness; assert both complete, and that where sub-agents or image input are unavailable the system degrades and *says so* rather than silently skipping.
 13. **Cost baseline** — record tokens for one screen built with the system versus without, to confirm the correction-turn saving is real.
 
