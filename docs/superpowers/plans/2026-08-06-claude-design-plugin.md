@@ -763,11 +763,15 @@ file paths, and `TASTE.md`. Screenshots and standards load in the sub-agent's
 context; only findings return to the main session. This is the cost mechanism —
 do not read screenshots into the main context.
 
-## Available capabilities
+## Degrade
 
-Claude Code supports sub-agent dispatch and image reading natively, so no
-degradation is required on this runtime. Both the visual QA pass and the pixel
-diff run in full.
+Claude Code supports sub-agent dispatch and image reading natively, so this
+runtime does not need to degrade. Both the visual QA pass and the pixel diff run
+in full.
+
+If a Playwright MCP call fails, the pixel diff is the only thing lost: emit the
+code and state plainly that visual verification did not run. Never assert
+fidelity that was not measured.
 
 ## Parallel dispatch
 
