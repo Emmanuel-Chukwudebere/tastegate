@@ -442,6 +442,60 @@ This follows the pattern Superpowers already uses in production — skills are w
 - **Antigravity** — `invoke_subagent` with `TypeName: research` for read-only QA passes; no todo tool, so task tracking uses a task artifact (`write_to_file` with `IsArtifact: true`).
 - **Grok build** — capability-detect at runtime; fall back to inline execution where sub-agents are unavailable.
 
+### Dual distribution — plugin and `npx skills add`
+
+The repo must be installable **both** ways, from one layout:
+
+```bash
+claude --plugin-dir ./claude-design                    # Claude Code plugin
+npx skills@latest add emmanuel-chukwudebere/skills     # any agent, any runtime
+```
+
+Verified against the `skills` CLI (`vercel-labs/skills`, v1.5.22) and against
+`emilkowalski/skills` as a working reference. Requirements are minimal:
+
+- Skills live at `skills/<name>/SKILL.md` from the repo root — walked up to three
+  levels deep, so flat and categorised layouts both resolve.
+- `SKILL.md` needs YAML frontmatter with `name` and `description`.
+- **No manifest is required.** Emil's repo root contains only `.gitignore`,
+  `LICENSE`, `README.md`, and `skills/` — that is the entire installable surface.
+- Supporting files sit beside `SKILL.md` in the same directory (Emil ships
+  `RECIPES.md`, `STANDARDS.md`, `AUDIT.md`, `PLAN-TEMPLATE.md`, `PICKER.md` this way).
+
+**The two formats are compatible, not competing.** `skills/<name>/SKILL.md` is
+exactly what the Claude Code plugin spec expects, and `.claude-plugin/plugin.json`
+is simply ignored by the `skills` CLI. One layout, two install paths.
+
+One adjustment follows. Under `npx skills add`, only each skill's own directory is
+installed — a sibling `standards/` directory at the repo root would not come with
+it. Shared standards therefore live **inside the skill that owns them**, and other
+skills reference them by relative path:
+
+```
+skills/
+├── design/
+│   ├── SKILL.md
+│   ├── MOTION.md         ← authoritative copy, travels with the skill
+│   ├── TYPOGRAPHY.md
+│   ├── RUBRIC.md
+│   ├── SLOP.md
+│   ├── FIGMA-CLI.md
+│   └── qa-brief.md
+├── taste/     SKILL.md + intake.md + interview.md + TASTE-template.md
+├── ship/      SKILL.md + emit.md + states.md + FRAMEWORKS.md
+├── explore/   SKILL.md
+└── review/    SKILL.md
+```
+
+Each skill states its dependency explicitly, and degrades to its own rules when a
+sibling is absent — someone installing only `review` still gets a working audit.
+Skills must therefore **locate their standards rather than assume a fixed path**,
+checking their own directory first, then sibling skill directories.
+
+`scripts/` is likewise reachable only in the plugin install, so every script has a
+documented inline equivalent: the skill states the `figma-cli` commands directly,
+and the script is a convenience wrapper rather than a hard dependency.
+
 ### Graceful degradation
 
 The pipeline must not require sub-agents to function. Where a runtime cannot dispatch them, the QA pass runs **inline in the main context** — more expensive, identical output. Where a runtime cannot read images, the visual pass is skipped and the system says so plainly rather than asserting unverified fidelity, falling back to `a11y audit` and token-compliance checks that need no eyes.
