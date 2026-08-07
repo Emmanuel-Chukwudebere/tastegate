@@ -95,3 +95,10 @@ says so rather than asserting unverified results.
 ## License
 
 MIT. Emil Kowalski's skills are MIT and separately installed.
+
+## Verify
+
+```bash
+bash tests/run-all.sh        # every suite
+claude plugin validate .     # manifest and structure
+```
