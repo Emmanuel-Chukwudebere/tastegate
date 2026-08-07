@@ -10,16 +10,16 @@ ordered() { # $1 file, $2 earlier, $3 later
 E=skills/explore/SKILL.md
 has "$E" "Define three directions"
 has "$E" "figma-cli render-batch '[…]' --verify"
-has "$E" "Check each against \`skills/design/SLOP.md\` **before building**"
+has "$E" "Check each against \`design/SLOP.md\` **before building**"
 has "$E" "**all in a single message** so they run"
 has "$E" "**locked direction** for the project"
 has "$E" "invoke Emil's \`prototype\` skill"
 has "$E" "differ in *approach*, not in accent color"
 # The SLOP check must precede the build step, not just be mentioned somewhere:
-ordered "$E" "Check each against \`skills/design/SLOP.md\` \*\*before building\*\*" "### 2. Build in parallel"
+ordered "$E" "Check each against \`design/SLOP.md\` \*\*before building\*\*" "### 2. Build in parallel"
 
 R=skills/review/SKILL.md
-has "$R" "\`skills/design/RUBRIC.md\`."
+has "$R" "\`design/RUBRIC.md\`."
 has "$R" "Never apply fixes from this skill. If the user wants them applied, that is"
 has "$R" "invoke \`improve-animations\` for a repo-wide motion audit with"
 has "$R" "Invoke \`review-animations\` on the code diff or implementation. Its posture is"

@@ -8,6 +8,16 @@ description: Use when starting design work in a project that has no taste profil
 Establishes what "good" means for this project. Every other design skill depends
 on the files this produces, so nothing else runs meaningfully until this does.
 
+## Locating standards
+
+A standard named without a path sits beside this SKILL.md — read it directly.
+A standard named `<skill>/<FILE>` would belong to a sibling skill: look beside
+this SKILL.md first, then in that sibling skill's own directory. This skill
+has no sibling standards to locate today; if a future reference to one is
+absent under a single-skill install, say so once, apply this skill's own
+rules, and continue — never fail, and never silently skip a check while
+implying it ran.
+
 ## Output location
 
 Write to the **consuming project's** directory, never the plugin's:

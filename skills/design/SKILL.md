@@ -8,6 +8,17 @@ description: Use when building or reshaping UI in Figma, creating screens or com
 Composes UI in Figma from the project's registry and taste profile, checks its own
 output, and only then shows the result.
 
+## Locating standards
+
+A standard named without a path sits beside this SKILL.md — read it directly.
+A standard named `<skill>/<FILE>` belongs to a sibling skill: look beside this
+SKILL.md first, then in that sibling skill's own directory (for example
+`../design/RUBRIC.md` under a full plugin install, or wherever the harness
+installed that skill). A single-skill install ships only this directory, so a
+sibling standard may be absent — when that happens, say so once, apply the
+rule stated inline in this skill, and continue. Never fail, and never
+silently skip a check while implying it ran.
+
 ## Preconditions
 
 1. Run `bash scripts/preflight.sh`. Stop on hard failure.
@@ -16,7 +27,7 @@ output, and only then shows the result.
    produces exactly the untethered output this plugin exists to prevent.
 3. Read `.claude/design/registry.md`. If empty, warn that output will be generated
    rather than composed, then proceed.
-4. Read `skills/design/FIGMA-CLI.md` for the JSX dialect before writing any JSX.
+4. Read `FIGMA-CLI.md` for the JSX dialect before writing any JSX.
 
 ## Loop
 
@@ -66,7 +77,7 @@ fix it before critique is worth running.
 Running the model before this gate would pay Sonnet to find what `lint` finds free.
 
 ### 6. QA — dispatch a sub-agent
-Dispatch per `skills/design/RUNTIMES.md` using
+Dispatch per `RUNTIMES.md` using
 `qa-brief.md` as the brief. Model: **sonnet**. The screenshot and
 standards load in the sub-agent's context; only findings return here. Do not read
 the screenshot into this context.

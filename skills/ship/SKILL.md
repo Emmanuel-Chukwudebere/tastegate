@@ -11,9 +11,21 @@ framework the project already uses.
 Argument: an optional target — `react` (default), `vue`, `svelte`,
 `react-native`, `html`.
 
+## Locating standards
+
+A standard named without a path sits beside this SKILL.md — read it directly.
+A standard named `<skill>/<FILE>` (for example `design/MOTION.md`) belongs to
+a sibling skill: look beside this SKILL.md first, then in that sibling
+skill's own directory (`../design/MOTION.md` under a full plugin install, or
+wherever the harness installed that skill). This skill ships with its own
+directory only under a single-skill install, so `design/MOTION.md` and
+`design/RUBRIC.md` may be absent — if so, say so once, apply the rule stated
+inline in this skill, and continue. Never fail, and never silently skip a
+check while implying it ran.
+
 ## Preconditions
 
-1. Read `skills/ship/FRAMEWORKS.md`. **Detect** the project's framework and styling
+1. Read `FRAMEWORKS.md`. **Detect** the project's framework and styling
    system from `package.json` and existing components before asking. Never
    introduce a second styling paradigm into a project that has one.
 2. Read `.claude/design/TASTE.md` and `registry.md`.
@@ -26,8 +38,8 @@ components is what produces fragile hand-rolled toasts and unjustified animation
 
 ### 1. `find-animation-opportunities`
 Invoke it on the design. Output: what should animate, and explicitly what must
-not. The frequency matrix in `MOTION.md` governs — keyboard-initiated actions
-never animate.
+not. The frequency matrix in `design/MOTION.md` governs — keyboard-initiated
+actions never animate.
 
 ### 2. `pick-ui-library`
 Invoke it before writing any component.
@@ -57,7 +69,7 @@ unfinished.
 
 ### 5. `animate`
 Invoke it to author each animation warranted by step 1, with correct curve,
-duration, property, interruption, and exit. Values from `MOTION.md`.
+duration, property, interruption, and exit. Values from `design/MOTION.md`.
 
 ### 6. `review-animations`
 Invoke it on the emitted code as an adversarial audit.
@@ -79,7 +91,7 @@ then state plainly that visual verification **did not run**. Never imply measure
 fidelity that was not measured.
 
 ### 8. Round-trip check
-Run `skills/design/RUBRIC.md` against the built result, so code is held to the
+Run `design/RUBRIC.md` against the built result, so code is held to the
 standard the design was held to.
 
 ## Token round trip

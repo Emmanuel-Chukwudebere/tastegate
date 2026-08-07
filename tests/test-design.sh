@@ -19,7 +19,7 @@ has "$S" "\`qa-brief.md\` as the brief. Model: **sonnet**. The screenshot and"
 has "$S" "**Maximum 3 QA passes.** Escalate to opus"
 has "$S" "**If it does not exist, refuse** and direct the"
 # The gate must run before the model-based QA pass:
-ordered "$S" "bash scripts/gates.sh <nodeId>" "Dispatch per \`skills/design/RUNTIMES.md\` using"
+ordered "$S" "bash scripts/gates.sh <nodeId>" "Dispatch per \`RUNTIMES.md\` using"
 # Registry lookup must precede building:
 ordered "$S" "figma-cli spec \"<ComponentName>\"" "figma-cli render-batch"
 

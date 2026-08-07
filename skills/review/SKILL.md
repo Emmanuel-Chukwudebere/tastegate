@@ -8,6 +8,24 @@ description: Use when the user asks for design feedback, a design review, or an 
 Scores existing work against the standards and reports. **Read-only** — it emits
 findings and a plan, and changes no files.
 
+## Locating standards
+
+A standard named `<skill>/<FILE>` (for example `design/RUBRIC.md`) belongs to a
+sibling skill: look beside this SKILL.md first, then in `design/`'s own
+directory (`../design/RUBRIC.md` under a full plugin install, or wherever the
+harness installed that skill). This skill ships alone under a single-skill
+install, so `design/qa-brief.md` and `design/RUBRIC.md` may be absent. **If
+absent, say so once, then fall back to the compact rule below and continue —
+never fail, and never silently skip the check while implying it ran.** The
+sibling file is authoritative whenever it is present; treat the summary below
+only as this skill's own fallback rule.
+
+**Inline fallback for `design/RUBRIC.md`** — score all eight dimensions
+(Typography, Palette, Spacing, Hierarchy, Motion, Accessibility, Slop,
+Breakpoint behaviour) on a 0-5 scale, each finding carrying cited evidence and
+an exact fix, never "improve the spacing." Escalate to opus when any
+dimension scores ≤ 2 on two consecutive passes.
+
 ## Scope
 
 Works against either Figma frames or a code implementation.
@@ -32,8 +50,8 @@ Code: run it and screenshot with Playwright at each width in `TASTE.md`.
 
 ### 3. Score
 Dispatch a sub-agent (model **sonnet**) with the brief in
-`skills/design/qa-brief.md`, scoring all 8 dimensions from
-`skills/design/RUBRIC.md`.
+`design/qa-brief.md`, scoring all 8 dimensions from
+`design/RUBRIC.md`.
 
 Escalate that pass to **opus** when any dimension scores ≤ 2 on two consecutive
 passes, and say that you escalated and why.
