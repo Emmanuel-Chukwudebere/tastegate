@@ -37,3 +37,89 @@ fidelity that was not measured.
 
 For `/explore`, send multiple `Agent` calls in a single message so directions
 generate concurrently rather than in sequence.
+
+---
+
+# Runtime: Codex
+
+| Capability requested | Codex equivalent |
+|---|---|
+| Dispatch a sub-agent | `spawn_agent` / `wait_agent` / `close_agent` |
+| Read an image | image input where supported |
+| Run a command | shell tool |
+
+## Enabling sub-agents
+
+Sub-agent dispatch requires multi-agent support. Add to `~/.codex/config.toml`:
+
+```toml
+[features]
+multi_agent = true
+```
+
+Without it, `spawn_agent` is unavailable.
+
+## Degrade
+
+If sub-agents are unavailable, run the QA pass **inline** in the main context.
+More expensive, identical output — the rubric is what produces the quality, not
+the isolation.
+
+If image input is unavailable, skip the visual pass and **say so plainly**. Fall
+back to `figma-cli lint`, `a11y audit`, and token-compliance checks, which need
+no eyes. Never assert fidelity that was not measured.
+
+---
+
+# Runtime: Antigravity (`agy`)
+
+| Capability requested | Antigravity equivalent |
+|---|---|
+| Dispatch a sub-agent | `invoke_subagent` — `TypeName: research` for read-only QA, `self` for full-capability work |
+| Track multi-step work | a **task artifact**: `write_to_file` with `IsArtifact: true` and `ArtifactType: "task"` |
+| Read an image | image input where supported |
+| Run a command | shell tool |
+
+## Task tracking
+
+Antigravity has no todo tool — `manage_task` manages background processes, not a
+checklist. When a skill asks for task tracking, maintain a markdown checklist as
+a task artifact and edit it with `replace_file_content` as steps complete.
+
+## QA dispatch
+
+Use `TypeName: research` for the QA pass — it is read-only by nature, which
+matches the pass exactly.
+
+## Degrade
+
+Same rules as every runtime: no sub-agents → run QA inline; no image input →
+skip the visual pass and **say so plainly**, falling back to the deterministic
+gates. Never claim unmeasured fidelity.
+
+---
+
+# Runtime: Grok (build mode)
+
+Grok's tool surface varies by deployment, so **detect capabilities at runtime** rather than assuming them.
+
+| Capability requested | Resolution |
+|---|---|
+| Dispatch a sub-agent | use the harness's sub-agent facility if present; otherwise inline |
+| Read an image | use image input if present; otherwise skip the visual pass |
+| Run a command | shell tool |
+
+## Detection
+
+Before the QA pass, establish whether sub-agent dispatch and image input exist.
+If either is missing, take the degradation path below rather than failing.
+
+## Degrade
+
+- No sub-agents → run the QA pass **inline** in the main context. The rubric
+  supplies the quality; isolation only supplies the cost saving.
+- No image input → skip the visual pass, run `figma-cli lint`, `a11y audit`, and
+  token-compliance checks, and **state plainly** that visual verification did not
+  run.
+
+The pipeline must never require sub-agents to function.
