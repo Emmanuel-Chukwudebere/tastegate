@@ -34,6 +34,6 @@ the reasoning is what makes a finding actionable. Depth here is the point — yo
 have the standards in context precisely so you can score against numbers rather
 than impressions.
 
-**If any dimension scores ≤ 2 and this is pass 2 or later**, say explicitly that this warrants escalation to a stronger model, and why.
+**If the same dimension scores ≤ 2 on two consecutive passes**, say explicitly that this warrants escalation to a stronger model, and why.
 
 Return: the scores, the findings, and a one-line verdict — ship, fix, or escalate.
