@@ -10,6 +10,7 @@ ordered() {
 S=skills/ship/SKILL.md
 has "$S" "### 1. \`find-animation-opportunities\`"
 has "$S" "### 2. \`pick-ui-library\`"
+has "$S" "Never hand-roll a toast, drawer, popover, dialog, or combobox — hand-rolled"
 has "$S" "### 5. \`animate\`"
 has "$S" "### 6. \`review-animations\`"
 has "$S" "figma-cli export-jsx <nodeId> --pretty        # structural scaffold"

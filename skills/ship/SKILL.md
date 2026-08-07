@@ -30,9 +30,9 @@ not. The frequency matrix in `MOTION.md` governs — keyboard-initiated actions
 never animate.
 
 ### 2. `pick-ui-library`
-Invoke it before writing any component. Never hand-roll a toast, drawer,
-popover, dialog, or combobox — hand-rolled versions reliably carry
-accessibility, z-index, and focus-management defects.
+Invoke it before writing any component.
+Never hand-roll a toast, drawer, popover, dialog, or combobox — hand-rolled
+versions reliably carry accessibility, z-index, and focus-management defects.
 
 ### 3. Extract and export mechanically
 See `emit.md`. In short:
