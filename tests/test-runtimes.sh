@@ -33,6 +33,18 @@ has "$R" "code and state plainly that visual verification did not run. Never ass
 has "$R" "If sub-agents are unavailable, run the QA pass **inline** in the main context."
 has "$R" "Same rules as every runtime: no sub-agents → run QA inline; no image input →"
 has "$R" "The pipeline must never require sub-agents to function."
+# The sub-agent-half anchors above stop at "no image input →" / "must never
+# require sub-agents" — they say nothing about what happens when image input
+# itself is missing. That consequence ("skip the visual pass" / "say so
+# plainly" — the guard against asserting unverified fidelity) needs its own
+# anchor per runtime, with the consequence inside the anchor, not just the
+# trigger. Codex's and Antigravity's action and reporting each share one
+# line; Grok's are on two different lines, so it gets both halves anchored
+# separately.
+has "$R" "If image input is unavailable, skip the visual pass and **say so plainly**. Fall"
+has "$R" "skip the visual pass and **say so plainly**, falling back to the deterministic"
+has "$R" 'No image input → skip the visual pass, run `figma-cli lint`, `a11y audit`, and'
+has "$R" 'token-compliance checks, and **state plainly** that visual verification did not'
 
 M=README.md
 has "$M" "claude --plugin-dir /path/to/claude-design"
