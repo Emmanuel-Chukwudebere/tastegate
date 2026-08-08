@@ -64,5 +64,19 @@ has "$Q" "**Budget: \`[N]\` tool calls.**"
 has "$Q" "do not re-derive"
 has "$Q" "not in the *number of findings*"
 
+# The audit judges by comparing pictures against the agreed direction. Told to score
+# eight dimensions with no reference and no budget, one pass spent 195 tool calls
+# probing properties a gate had already measured. These anchors carry the polarity
+# ("not by measuring", "Do not probe") so a reversal breaks the check.
+has "$Q" "**Compare against the direction:**"
+has "$Q" "**Judge by looking, not by measuring.**"
+has "$Q" "**Do not probe node properties.**"
+has "$Q" "**Lead with the direction, not the checklist.**"
+has "$Q" "still misses the direction has failed"
+has "$S" "**Pass the reference image alongside the build.**"
+# The reference must be handed over before the audit is dispatched, or there is
+# nothing to compare against.
+ordered "$S" "Pass the reference image alongside the build" "Cap the audit"
+
 echo "PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ]

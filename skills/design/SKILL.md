@@ -125,9 +125,23 @@ than the sum of all of them. Measured on a three-breakpoint hero, a single block
 audit of all three frames took 144 minutes and 195 tool calls; the same work
 overlapped and pre-supplied with gate facts is a fraction of that.
 
+**Pass the reference image alongside the build.** The QA pass judges by comparing two
+pictures, so give it both: the `--verify` screenshot and whatever the direction was
+arrived at from — the reference site capture from `/taste`, the moodboard, or the
+winning `/explore` frame. Without the reference it can only check rules; with it, it
+can tell you the build missed the direction, which is the finding that matters most.
+
+Keep the reference captures from intake rather than discarding them. `/taste` saves a
+screenshot per breakpoint precisely so this comparison is possible later.
+
 **Feed the gate's findings into the brief.** The sub-agent should never spend calls
 re-deriving what step 5 already measured — fonts, token bindings, contrast ratios,
 node geometry. State them as fact and let it spend its budget on judgement.
+
+Told to score eight dimensions with no budget and no reference, an audit will go
+measuring — one such pass spent 195 tool calls probing properties the gate had
+already established. The instruction that fixes this is explicit: **look at the
+images, do not probe.**
 
 **Cap the audit.** Give the sub-agent a tool-call budget in the brief and tell it to
 report what it has when the budget is spent. An audit with no ceiling will keep

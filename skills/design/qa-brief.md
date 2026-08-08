@@ -16,6 +16,20 @@ flag; approval is earned.
 
 **Look at the screenshot:** `[screenshot path]`
 
+**Compare against the direction:** `[reference screenshot path, where one exists —
+the site, the moodboard, or the winning /explore direction]`
+
+**Judge by looking, not by measuring.** Put the two images side by side and read the
+difference: type size and weight, line breaks, spacing rhythm, element position,
+where the eye lands first. A picture carries more than a property dump, and your
+value here is the comparison a machine cannot make.
+
+**Do not probe node properties.** Fonts, token bindings, contrast ratios, and
+geometry are already measured below by a deterministic gate — free and exact. Probing
+them again spends your budget rediscovering facts you were handed. Read a property
+only when the image shows something wrong and the exact current value is missing from
+the facts below.
+
 **Context:** `[what was built and why; the brief it answers]`
 **Pass number:** `[n]` of 3
 **Prior findings, if any:** `[previous findings, so you do not repeat them]`
@@ -33,6 +47,24 @@ dimension, say which, so it can be picked up rather than assumed clean.
 
 **Score all 8 dimensions** from `RUBRIC.md`: Typography, Palette, Spacing,
 Hierarchy, Motion, Accessibility, Slop, Breakpoint behaviour.
+
+Score most of them from the images and the facts below. Only Accessibility needs
+numbers you cannot see, and those numbers are already supplied. Three dimensions are
+purely visual judgement — Hierarchy, Slop, and whether the signature element from
+`TASTE.md` actually lands — and those are where your attention belongs.
+
+**Lead with the direction, not the checklist.** Before scoring anything, answer two
+questions from the images alone:
+
+1. **Does this read as the direction `TASTE.md` describes?** Name where it holds and
+   where it drifts. The profile's signature element is the test — if it is not the
+   most memorable thing on screen, that is the first finding.
+2. **Where does it diverge from the reference?** Be specific and visual: "the headline
+   sits lower and the sub-copy runs a line longer, so the form falls below the fold"
+   beats a table of pixel deltas.
+
+A build that passes all eight dimensions and still misses the direction has failed.
+Say so plainly rather than letting a clean scorecard imply success.
 
 **For every finding, give:**
 1. The dimension and its score (0–5)
