@@ -1,10 +1,16 @@
 {
   "name": "claude-design",
   "description": "Design with taste: grounds UI work in your design system and references, self-checks output before showing it, and ships pixel-perfect code.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": {
     "name": "imman"
   },
   "license": "MIT",
-  "keywords": ["design", "figma", "ui", "motion", "design-system"]
+  "keywords": [
+    "design",
+    "figma",
+    "ui",
+    "motion",
+    "design-system"
+  ]
 }

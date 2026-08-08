@@ -59,6 +59,37 @@ Under the plugin, skills are namespaced (`/claude-design:taste`). Under
 brings `scripts/`, though every script has an inline equivalent documented in the
 skill that uses it, so nothing depends on them.
 
+## Updating
+
+Installs do not track the repo — both paths copy the files, so pushing a change
+does not reach an existing install.
+
+**Skill bundle:**
+
+```bash
+npx skills@latest update            # all installed skills
+npx skills@latest update design     # or one by name
+```
+
+**Plugin:**
+
+```bash
+claude plugin marketplace update emmanuel-chukwudebere
+claude plugin update claude-design
+```
+
+Then `/reload-plugins`, or restart the session.
+
+**If you publish changes, bump `version` in `.claude-plugin/plugin.json`.** Users
+only receive plugin updates when that field changes; leave it alone and
+`plugin update` finds nothing to do even though the repo moved. (Omit `version`
+entirely and the commit SHA is used instead, making every commit an update — fine
+for a fast-moving fork, noisy for a published plugin.)
+
+**Developing?** Skip both. `claude --plugin-dir /path/to/claude-design` reads the
+working tree directly, so `/reload-plugins` picks up an edit with no version bump
+and no reinstall.
+
 ## Use
 
 | Command | When |
