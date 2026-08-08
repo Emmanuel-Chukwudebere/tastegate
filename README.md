@@ -6,7 +6,7 @@ own output before showing it, and ships pixel-perfect code.
 It reproduces the three mechanisms behind Anthropic's hosted Claude Design
 product — component grounding, a closed-loop self-check, and parallel
 explorations — locally, and adds motion, typography, and accessibility standards
-that product does not enforce. It works on Amazon Bedrock, where the hosted
+that product does not enforce. It works with 3rd-party login on Claude Code, where the hosted
 `/design-sync` path is unavailable.
 
 ## Requirements
