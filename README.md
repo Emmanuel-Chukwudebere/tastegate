@@ -23,7 +23,7 @@ still enforces the motion rules; with them, they are authoritative.
 
 ## Install
 
-Two ways, same repo.
+Three ways, same repo.
 
 **As a skill bundle** — works in Claude Code, Codex, Cursor, Antigravity, and any
 agent the `skills` CLI supports:
@@ -38,7 +38,15 @@ Add one skill only, if you prefer:
 npx skills@latest use emmanuel-chukwudebere/skills/skills/taste
 ```
 
-**As a Claude Code plugin** — namespaced skills plus the helper scripts:
+**As a Claude Code plugin, from the marketplace** — namespaced skills plus the
+helper scripts:
+
+```bash
+claude plugin marketplace add Emmanuel-Chukwudebere/claude-design
+claude plugin install claude-design@emmanuel-chukwudebere
+```
+
+**As a Claude Code plugin, from a local checkout** — for development:
 
 ```bash
 claude --plugin-dir /path/to/claude-design

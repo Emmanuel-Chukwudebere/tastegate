@@ -1,0 +1,14 @@
+{
+  "name": "emmanuel-chukwudebere",
+  "description": "Design engineering skills for Claude Code: taste-grounded UI generation in Figma, self-checked before you see it, and pixel-perfect handoff to code.",
+  "owner": {
+    "name": "Emmanuel Chukwudebere"
+  },
+  "plugins": [
+    {
+      "name": "claude-design",
+      "source": "./",
+      "description": "Design with taste: grounds UI work in your design system and references, self-checks output before showing it, and ships pixel-perfect code."
+    }
+  ]
+}
