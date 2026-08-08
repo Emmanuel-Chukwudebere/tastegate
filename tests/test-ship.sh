@@ -30,6 +30,11 @@ has "$E" "flag. So it produces a **structural scaffold**: correct hierarchy, nes
 has "$E" "| Token values | \`export css\` / \`export tailwind\` / \`export dtcg\` | tool — exact, free |"
 has "$E" "## Auto Layout maps onto flexbox"
 has "$E" "\`extract --selection\` returns Auto Layout values — padding, gap, alignment,"
+# The slash-to-hyphen flattening is mechanical, not a mismatch:
+has "$E" "That flattening is mechanical"
+has "$E" "and one-to-one, not a mismatch — the code-side hyphenated form and the"
+# A var: reference in JSX must use the slash form, not the CSS one:
+has "$E" "\`var:\` reference in JSX must use the slash form, not the CSS one."
 
 T=skills/ship/states.md
 has "$T" "| Hover | **gated**: \`@media (hover: hover) and (pointer: fine)\` — touch fires false hovers, leaving sticky states |"

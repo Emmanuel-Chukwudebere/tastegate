@@ -61,6 +61,9 @@ figma-cli render-batch '["<Frame>…</Frame>","<Frame>…</Frame>"]' --verify
 
 `--verify` returns a screenshot in the same call, so seeing the result costs no
 extra round trip. Bind every color to a token: `bg="var:surface"`, never `bg="#fff"`.
+Resolve real variable names with `figma-cli var list` before writing a `var:`
+reference — `export css`'s hyphenated names (`--neutral-900`) are not valid
+`var:` targets; the slash form (`var:neutral/900`) is, per `FIGMA-CLI.md`.
 
 Use `<Icon name="prefix:name">` with the set from `TASTE.md`, or `<SVG>` for an
 unhosted set. Never hand-draw paths.
@@ -73,6 +76,10 @@ bash scripts/gates.sh <nodeId> "<ComponentName>"
 This runs `lint --fix`, `spec --check`, and `a11y audit`. All are free and exact.
 **A `spec --check` failure is a hard stop, not a finding** — the build is off-spec;
 fix it before critique is worth running.
+
+**An unresolved-variable warning from `render` is a build failure, not a
+cosmetic warning.** It is free to detect from the command's own output, so
+fix it before the QA pass — never let it reach the QA model or the user.
 
 Running the model before this gate would pay Sonnet to find what `lint` finds free.
 

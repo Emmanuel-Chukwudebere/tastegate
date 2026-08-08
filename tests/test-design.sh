@@ -18,6 +18,12 @@ has "$S" "bash scripts/gates.sh <nodeId> \"<ComponentName>\""
 has "$S" "\`qa-brief.md\` as the brief. Model: **sonnet**. The screenshot and"
 has "$S" "**Maximum 3 QA passes.** Escalate to opus"
 has "$S" "**If it does not exist, refuse** and direct the"
+# Real variable names must be resolved before writing var: references:
+has "$S" "Resolve real variable names with \`figma-cli var list\` before writing a \`var:\`"
+# Unresolved-variable warning is a build failure, not a cosmetic warning:
+has "$S" "**An unresolved-variable warning from \`render\` is a build failure, not a"
+# Must be fixed before the QA pass, never reaching the QA model or user:
+has "$S" "fix it before the QA pass — never let it reach the QA model or the user."
 # The gate must run before the model-based QA pass:
 ordered "$S" "bash scripts/gates.sh <nodeId>" "Dispatch per \`RUNTIMES.md\` using"
 # Registry lookup must precede building:

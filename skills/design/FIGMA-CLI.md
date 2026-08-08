@@ -31,7 +31,7 @@ Desktop directly over CDP. No API key, no rate limits.
 `var:primary`, `var:colors/brand-blue`). Variable references **stay bound**, so
 theme switching keeps working. Always prefer `var:` over a literal hex.
 
-## The four gotchas
+## The five gotchas
 
 | Wrong | Right |
 |---|---|
@@ -39,6 +39,41 @@ theme switching keeps working. Always prefer `var:` over a literal hex.
 | `padding={24}` | `p={24}` |
 | `fill="#fff"` | `bg="#fff"` |
 | `cornerRadius={12}` | `rounded={12}` |
+| `bg="var:neutral-900"` (hyphen, from `export css`) | `bg="var:neutral/900"` (slash, from `var list`) |
+
+## Slash vs. hyphen: the token-name gotcha
+
+Variables are named with slashes as their path separator, exactly as
+`var list` prints them: `neutral/900`, `colors/brand-blue`. `export css`
+flattens those slashes to hyphens to produce valid CSS custom-property
+names: `--neutral-900`. **A `var:` reference must use the slash form,
+matching `var list`, not the hyphen form from `export css`.** The hyphenated
+name is a CSS artifact, not the variable's name in Figma.
+
+Live evidence from a real design system (collections `Primitives`,
+`Semantic - Light`, `Semantic - Dark`): `export css` emitted
+`--neutral-900: #141416;`, and `var list` showed the same variable as
+`neutral/900 (COLOR)`. Rendering with the CSS-derived form —
+`bg="var:neutral-900"` — produced:
+
+```
+⚠ 3 variable reference(s) could not be resolved:
+  neutral-300, neutral-900, neutral-white
+  These bindings rendered as grey placeholders.
+```
+
+**An unresolved `var:` reference does not fail the render.** It warns,
+renders a grey placeholder, and the command still exits 0 — so it is only
+caught by reading the warning or by the visual pass, never by exit code
+alone. Re-rendering with `bg="var:neutral/900"` resolved cleanly with no
+warnings.
+
+Verify names with `figma-cli var list` (and `figma-cli collections list`)
+before writing `var:` references, rather than inferring them from
+`export css` output. Where multiple collections exist (as here — three
+collections, each defining its own `neutral/900`), pin resolution with
+`-c <collection>` (e.g. `-c Primitives`), or use the fully qualified
+`var:collection:name` form.
 
 ## Command map
 

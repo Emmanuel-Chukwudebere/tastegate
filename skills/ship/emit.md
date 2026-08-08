@@ -50,6 +50,12 @@ measurement, not interpretation.
    directory before creating anything new.
 2. Bound Figma variable → the CSS variable of the same name emitted by
    `export css`. Keep the namespace identical across Figma and code; that shared
-   namespace is what makes drift detectable later.
+   namespace is what makes drift detectable later. The spelling changes at the
+   boundary: Figma names variables with slashes (`neutral/900`, matching
+   `var list`), and `export css` flattens each slash to a hyphen for a valid
+   CSS custom-property name (`--neutral-900`). That flattening is mechanical
+   and one-to-one, not a mismatch — the code-side hyphenated form and the
+   Figma-side `var:` slash form are the same token under two spellings, and a
+   `var:` reference in JSX must use the slash form, not the CSS one.
 3. Never invent a value. If something is unbound in Figma, that is a finding to
    report, not a number to guess.

@@ -26,6 +26,16 @@ has "$F" 'bg="#fff"'
 has "$F" "rounded={16}"
 has "$F" "never use"
 has "$F" "eval"
+# Slash-vs-hyphen token gotcha: the rule must be stated with its modal intact.
+has "$F" "matching \`var list\`, not the hyphen form from \`export css\`.**"
+# Unresolved var: does not fail the render -- must be readable as one anchor.
+has "$F" "**An unresolved \`var:\` reference does not fail the render.**"
+# Real evidence: the failing warning text, verbatim.
+has "$F" "neutral-300, neutral-900, neutral-white"
+# Real evidence: the working slash form after the fix.
+has "$F" 'bg="var:neutral/900"` resolved cleanly with no'
+# Collection pin for disambiguating multiple collections.
+has "$F" "pin resolution with"
 
 echo "PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ]
