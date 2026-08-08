@@ -49,5 +49,20 @@ nothas "$Q" "and this is pass 2 or later"
 
 if [ -x scripts/gates.sh ] || [ -f scripts/gates.sh ]; then echo "  PASS: gates.sh exists"; PASS=$((PASS+1)); else echo "  FAIL: gates.sh missing"; FAIL=$((FAIL+1)); fi
 
+# Throughput rules, added after a live build where one blocking audit of three
+# frames took 144 minutes and 195 tool calls. Each anchor guards a rule whose
+# reversal would restore that cost, so the polarity sits inside the anchor.
+has "$S" "**Dispatch in the background and keep building.**"
+has "$S" "**Cap the audit.**"
+has "$S" "Also gate the font bindings.**"
+# The font gate must run in step 5, before the QA dispatch — same reason the
+# lint/spec gates do: it is free, and a model hunting it is not.
+ordered "$S" "Also gate the font bindings" "Dispatch in the background"
+
+Q=skills/design/qa-brief.md
+has "$Q" "**Budget: \`[N]\` tool calls.**"
+has "$Q" "do not re-derive"
+has "$Q" "not in the *number of findings*"
+
 echo "PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ]

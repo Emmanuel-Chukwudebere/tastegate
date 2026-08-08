@@ -88,13 +88,51 @@ composing them.
 cosmetic warning.** It is free to detect from the command's own output, so
 fix it before the QA pass — never let it reach the QA model or the user.
 
+**Also gate the font bindings.** Weight keywords and numerics are per-family, and
+a wrong form falls back to Inter silently — `render` still exits 0 (see
+`FIGMA-CLI.md`). This is mechanically detectable, so detect it here rather than
+paying a model to notice it:
+
+```bash
+figma-cli run <script>   # assert every TEXT node's fontName matches TASTE.md
+```
+
+The script walks the rendered frame and reports any `fontName.family` outside the
+profile's declared families. An unexpected family is a **hard stop** — Inter
+arriving uninvited is the "generic type" entry in `SLOP.md`, and letting it reach
+the QA pass wastes the expensive pass on a free check.
+
+Hand the gate's output to the QA pass as established fact. Every fact the sub-agent
+must re-derive costs a tool call and wall-clock; the gate already knows the fonts,
+the token bindings, the contrast ratios, and the node geometry.
+
 Running the model before this gate would pay Sonnet to find what `lint` finds free.
 
-### 6. QA — dispatch a sub-agent
+### 6. QA — dispatch a sub-agent, overlapped not blocking
 Dispatch per `RUNTIMES.md` using
 `qa-brief.md` as the brief. Model: **sonnet**. The screenshot and
 standards load in the sub-agent's context; only findings return here. Do not read
 the screenshot into this context.
+
+**Dispatch in the background and keep building.** A blocking QA pass makes the user
+wait through the whole audit before seeing anything. Send the first frame to QA the
+moment it renders and gate-passes, then build the next frame while that audit runs.
+Collect findings as they return.
+
+Where a build has several frames — breakpoints, states, variants — this turns a
+serial chain into a pipeline: the wall-clock becomes the slowest single audit rather
+than the sum of all of them. Measured on a three-breakpoint hero, a single blocking
+audit of all three frames took 144 minutes and 195 tool calls; the same work
+overlapped and pre-supplied with gate facts is a fraction of that.
+
+**Feed the gate's findings into the brief.** The sub-agent should never spend calls
+re-deriving what step 5 already measured — fonts, token bindings, contrast ratios,
+node geometry. State them as fact and let it spend its budget on judgement.
+
+**Cap the audit.** Give the sub-agent a tool-call budget in the brief and tell it to
+report what it has when the budget is spent. An audit with no ceiling will keep
+finding smaller things until it runs out of context, and the marginal finding is
+worth far less than the wall-clock it costs.
 
 ### 7. Fix and re-verify
 Apply the findings, re-render, re-gate. **Maximum 3 QA passes.** Escalate to opus

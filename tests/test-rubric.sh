@@ -45,5 +45,18 @@ has "$F" "pin resolution with"
 # --help), so the anchor carries the full correct call shape:
 has "$F" "spec <component> --check <nodeId> --tolerance 2"
 
+# Font weight forms are per-family and a wrong form falls back to Inter with no
+# warning and exit 0 — found live when weight="semibold" on Syne rendered Inter.
+# Anchors carry the per-family split, since a doc that lost it would send builders
+# straight back into the silent fallback.
+has "$F" "Inter is every text node's initial state, so a font that never binds stays Inter"
+has "$F" 'is the default `fontName` of a newly created text node**, not a'
+has "$F" "load-order problem rather than a rejected keyword"
+# verify writes to /tmp, which Node resolves as C:\tmp on Windows.
+has "$F" '`figma-cli verify <nodeId>` saves to'
+has "$F" "mkdir -p /c/tmp"
+# eval/run reject top-level await and bare return.
+has "$F" "reject top-level"
+
 echo "PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ]

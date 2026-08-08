@@ -75,6 +75,57 @@ collections, each defining its own `neutral/900`), pin resolution with
 `-c <collection>` (e.g. `-c Primitives`), or use the fully qualified
 `var:collection:name` form.
 
+## Inter is every text node's initial state, so a font that never binds stays Inter
+
+**Inter Regular is the default `fontName` of a newly created text node**, not a
+fallback the tool chooses. Verified directly: `figma.createText()` reports
+`{"family":"Inter","style":"Regular"}` before any font is loaded, and reports the
+intended family only after `loadFontAsync` resolves and the style is assigned.
+
+So text rendering in Inter does not mean a wrong weight vocabulary — it means the
+font binding did not complete. `render` reports success and exits 0 either way,
+because the node was created; only the binding lagged.
+
+What was observed live: `weight="semibold" font="Syne"` at 105px left the node on
+Inter, while `weight="600" font="Syne"` bound correctly, and both forms bind
+correctly when set after an explicit `loadFontAsync`. Treat the numeric form as the
+more reliable one for a family whose style names are non-obvious, but understand the
+failure as a load-order problem rather than a rejected keyword.
+
+This matters beyond aesthetics: Inter arriving uninvited is the "generic type" entry
+in `SLOP.md`, so an unbound font plants the exact defect the rubric exists to catch,
+in the most-repeated text on the page.
+
+**Probe the result rather than trusting the render.** Weight is not visible in
+`render`'s output, so verify it mechanically — see the font-binding gate in
+`SKILL.md` step 5. To repair unbound text, load the font first, then assign:
+
+```js
+await figma.loadFontAsync({family:'Syne', style:'SemiBold'});
+node.fontName = {family:'Syne', style:'SemiBold'};
+```
+
+Confirm the styles a family actually offers before assigning one:
+
+```bash
+figma-cli eval "(async () => (await figma.listAvailableFontsAsync()).filter(f => /syne/i.test(f.fontName.family)).map(f => f.fontName.style))()"
+```
+
+`figma-cli eval` and `run` reject top-level `await` and bare `return`. Wrap the
+body in an async IIFE — `(async () => { … })();` — and end with the value.
+
+## `verify` writes to `/tmp`, which is `C:\tmp` on Windows
+
+`figma-cli verify <nodeId>` saves to `/tmp/figma-verify-<id>.png`. Node resolves
+that to `C:\tmp` on Windows, so it fails with `ENOENT` until the directory exists:
+
+```bash
+mkdir -p /c/tmp
+```
+
+`render --verify` and `render-batch --verify` are unaffected — they write to the
+real `%TEMP%`. Prefer them, since they return the screenshot in the same call.
+
 ## Command map
 
 | Purpose | Command |
