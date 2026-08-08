@@ -29,13 +29,13 @@ Three ways, same repo.
 agent the `skills` CLI supports:
 
 ```bash
-npx skills@latest add emmanuel-chukwudebere/skills
+npx skills@latest add emmanuel-chukwudebere/claude-design
 ```
 
 Add one skill only, if you prefer:
 
 ```bash
-npx skills@latest use emmanuel-chukwudebere/skills/skills/taste
+npx skills@latest use emmanuel-chukwudebere/claude-design/skills/taste
 ```
 
 **As a Claude Code plugin, from the marketplace** — namespaced skills plus the

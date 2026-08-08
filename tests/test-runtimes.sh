@@ -50,7 +50,7 @@ has "$R" 'token-compliance checks, and **state plainly** that visual verificatio
 
 M=README.md
 has "$M" "claude --plugin-dir /path/to/claude-design"
-has "$M" "npx skills@latest add emmanuel-chukwudebere/skills"
+has "$M" "npx skills@latest add emmanuel-chukwudebere/claude-design"
 has "$M" "npm i -g figma-ds-cli                        # Figma control, no API key"
 has "$M" "npx skills@latest add emilkowalski/skills    # motion + interaction layer (MIT)"
 has "$M" "Start with \`taste\`. The other skills refuse or warn without a profile, by design"
