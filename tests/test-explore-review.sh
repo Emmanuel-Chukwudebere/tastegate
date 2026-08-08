@@ -20,6 +20,8 @@ ordered "$E" "Check each against \`design/SLOP.md\` \*\*before building\*\*" "##
 
 R=skills/review/SKILL.md
 has "$R" "\`design/RUBRIC.md\`."
+# analyze clusters is optional (needs figma-use); health check must be marked not-run, not silently skipped, when absent:
+has "$R" "unavailable, report the cluster-detection health check as not run rather than"
 has "$R" "Never apply fixes from this skill. If the user wants them applied, that is"
 has "$R" "invoke \`improve-animations\` for a repo-wide motion audit with"
 has "$R" "Invoke \`review-animations\` on the code diff or implementation. Its posture is"

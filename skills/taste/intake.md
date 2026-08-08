@@ -21,6 +21,8 @@ figma-cli analyze-url <url> -w 834  --screenshot   # tablet
 figma-cli analyze-url <url> -w 1440 --screenshot   # desktop
 ```
 
+Requires `playwright` (`npm i -g playwright`); if it is unavailable, capture the reference visually via Playwright MCP or a screenshot instead, and record the resulting values as **inferred rather than measured**.
+
 It returns: `color`, `backgroundColor`, `fontSize`, `fontWeight`, `fontFamily`,
 `borderRadius`, `border`, `padding`, plus element geometry for headings, buttons,
 inputs, and labels.

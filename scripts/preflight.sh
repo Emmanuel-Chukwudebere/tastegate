@@ -25,4 +25,25 @@ else
   echo "PREFLIGHT: emil-skills install with: npx skills@latest add emilkowalski/skills"
 fi
 
+# Optional: playwright powers analyze-url, screenshot-url, and recreate-url.
+# Check the global npm root and node's own resolver rather than invoking the
+# CLI itself — a missing package must never be discovered via a download or
+# a hanging spawn (that is exactly what timed out in the field).
+NPM_G="$(npm root -g 2>/dev/null)"
+if [ -d "${NPM_G:-/nonexistent}/playwright" ] || node -e "require.resolve('playwright')" >/dev/null 2>&1; then
+  echo "PREFLIGHT: playwright OK"
+else
+  echo "PREFLIGHT: playwright ABSENT - analyze-url, screenshot-url, and recreate-url will fail."
+  echo "PREFLIGHT: playwright install with: npm i -g playwright"
+fi
+
+# Optional: figma-use backs the analyze subcommands and node operations.
+# Same rule: check the global npm root only, never run `npx figma-use`.
+if [ -d "${NPM_G:-/nonexistent}/figma-use" ]; then
+  echo "PREFLIGHT: figma-use OK"
+else
+  echo "PREFLIGHT: figma-use ABSENT - analyze (clusters, colors, typography, spacing) and node (tree, bindings, to-component) will fail."
+  echo "PREFLIGHT: figma-use install with: npm i -g figma-use"
+fi
+
 exit "$HARD_FAIL"

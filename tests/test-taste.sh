@@ -10,6 +10,8 @@ has "$S" "\`.claude/design/TASTE.md\` — the taste profile"
 has "$S" "already exists, **amend it**. Read it first"
 # Description must state triggers only, not summarize workflow:
 nothas "$S" "description: Builds a taste profile by"
+# analyze clusters is optional (needs figma-use); registry build must have a stated fallback:
+has "$S" "(\`npm i -g figma-use\`); when it is unavailable, build the registry"
 
 I=skills/taste/intake.md
 has "$I" "\`analyze-url\` extracts real computed CSS via Playwright."
@@ -23,6 +25,8 @@ has "$I" "\`analyze clusters\` is both an intake step and a health check: three 
 has "$I" "\`browser_navigate\`, then \`browser_evaluate\`:"
 has "$I" "transitionTimingFunction: cs.transitionTimingFunction,"
 has "$I" "as **inferred**, never as measured."
+# analyze-url is optional (needs playwright); fallback must mark values inferred:
+has "$I" "if it is unavailable, capture the reference visually via Playwright MCP"
 has "$I" "**Iconsax is not on Iconify.**"
 has "$I" "unhosted set uses \`<SVG>\` rather than a silent lookalike substitution.**"
 

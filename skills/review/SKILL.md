@@ -41,6 +41,10 @@ figma-cli a11y audit             # contrast, touch targets, text, focus order
 figma-cli analyze clusters --json # components that should exist but do not
 ```
 
+`analyze clusters` requires `figma-use` (`npm i -g figma-use`); when it is
+unavailable, report the cluster-detection health check as not run rather than
+passed, rather than silently skipping it.
+
 For code, invoke `improve-animations` for a repo-wide motion audit with
 prioritized plans.
 
