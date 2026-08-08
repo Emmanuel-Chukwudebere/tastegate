@@ -73,13 +73,15 @@ uniq1 "$REVIEW" "Escalate to opus when the same"
 
 # --- 4. Mechanical check: every <skill>/<FILE> sibling reference resolves ---
 #        on disk under skills/<skill>/<FILE>. Catches typos and drift.
-#        Scoped to skills/*/SKILL.md, since the sibling-path form
-#        (`design/MOTION.md`) is only ever written from a *different*
-#        skill's directory looking across; a file already inside design/
-#        would drop the prefix (see part 4b).
+#        Covers EVERY markdown file under skills/, not just SKILL.md: the
+#        final review proved a SKILL.md-only glob vacuous by breaking
+#        `design/MOTION.md` inside supporting files (states.md,
+#        FRAMEWORKS.md, TASTE-template.md, intake.md) with the suite still
+#        passing. Part 4b covers the bare `<FILE>.md` form, which has no
+#        slash and so never matches this pattern.
 BACKTICK='`'
 PATTERN="${BACKTICK}(design|ship|explore|review|taste)/[A-Za-z0-9_.-]+\\.md${BACKTICK}"
-REFS="$(grep -noE "$PATTERN" skills/*/SKILL.md \
+REFS="$(grep -noE "$PATTERN" skills/*/*.md \
   | sed -E 's/^[^:]+:[0-9]+://' | tr -d "$BACKTICK" | sort -u)"
 if [ -z "$REFS" ]; then
   echo "  FAIL: no sibling <skill>/<FILE> references found to check"; FAIL=$((FAIL+1))
