@@ -8,6 +8,9 @@ S=skills/taste/SKILL.md
 has "$S" "description: Use when starting design work in a project that has no taste profile yet"
 has "$S" "\`.claude/design/TASTE.md\` — the taste profile"
 has "$S" "already exists, **amend it**. Read it first"
+# scripts/ must have a documented inline equivalent so README's "nothing
+# hard-depends on scripts/" claim is true under a single-skill install:
+has "$S" "checks directly: \`figma-cli --version\` and \`figma-cli status\` (hard — stop"
 # Description must state triggers only, not summarize workflow:
 nothas "$S" "description: Builds a taste profile by"
 # analyze clusters is optional (needs figma-use); registry build must have a stated fallback:
@@ -35,6 +38,10 @@ has "$V" "**Typography temperament.** Which reads right: geometric and neutral;"
 has "$V" "4. **Density.** Airy with generous whitespace, or dense and information-rich?"
 has "$V" "expressive and playful? Note that keyboard-initiated actions never animate"
 has "$V" "10. **The never list.** What must never appear? Record it verbatim"
+# Spec assigns animation-vocabulary and apple-design to /taste's intake --
+# both must be wired at interview time, not just mentioned in intake.md:
+has "$V" "Translate a vague description (\"bouncy\", \"snappy\","
+has "$V" "invoke \`apple-design\` and record that stance in"
 
 T=skills/taste/TASTE-template.md
 has "$T" "Accent appears in at most two placements per screen."

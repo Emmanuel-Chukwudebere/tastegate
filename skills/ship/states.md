@@ -19,7 +19,7 @@ unfinished.
 
 ## Motion in states
 
-Per `MOTION.md`:
+Per `design/MOTION.md`:
 
 - Hover and color shifts use `ease`.
 - Entry and exit use `ease-out`; never `ease-in`.

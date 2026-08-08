@@ -71,6 +71,10 @@ unfinished.
 Invoke it to author each animation warranted by step 1, with correct curve,
 duration, property, interruption, and exit. Values from `design/MOTION.md`.
 
+**If `TASTE.md` calls for a native feel** — direct manipulation, velocity
+handoff, translucent materials — invoke `apple-design` alongside `animate` for
+that component's motion and depth treatment.
+
 ### 6. `review-animations`
 Invoke it on the emitted code as an adversarial audit.
 

@@ -23,7 +23,7 @@ only as this skill's own fallback rule.
 **Inline fallback for `design/RUBRIC.md`** — score all eight dimensions
 (Typography, Palette, Spacing, Hierarchy, Motion, Accessibility, Slop,
 Breakpoint behaviour) on a 0-5 scale, each finding carrying cited evidence and
-an exact fix, never "improve the spacing." Escalate to opus when any
+an exact fix, never "improve the spacing." Escalate to opus when the same
 dimension scores ≤ 2 on two consecutive passes.
 
 ## Scope
@@ -50,15 +50,18 @@ prioritized plans.
 
 ### 2. Capture
 Figma: `figma-cli verify <nodeId>` for a screenshot.
-Code: run it and screenshot with Playwright at each width in `TASTE.md`.
+Code: run it and screenshot with Playwright at each width in `TASTE.md`. **If
+`.claude/design/TASTE.md` does not exist, say so once and proceed with the
+default widths 390 / 834 / 1440 rather than failing or silently skipping the
+breakpoint dimension.**
 
 ### 3. Score
 Dispatch a sub-agent (model **sonnet**) with the brief in
 `design/qa-brief.md`, scoring all 8 dimensions from
 `design/RUBRIC.md`.
 
-Escalate that pass to **opus** when any dimension scores ≤ 2 on two consecutive
-passes, and say that you escalated and why.
+Escalate that pass to **opus** when the same dimension scores ≤ 2 on two
+consecutive passes, and say that you escalated and why.
 
 ### 4. Motion specifically
 Invoke `review-animations` on the code diff or implementation. Its posture is

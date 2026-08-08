@@ -13,6 +13,10 @@ has "$S" "### 2. \`pick-ui-library\`"
 has "$S" "Never hand-roll a toast, drawer, popover, dialog, or combobox — hand-rolled"
 has "$S" "### 5. \`animate\`"
 has "$S" "### 6. \`review-animations\`"
+# Spec assigns apple-design to /taste AND /ship for native-feel briefs -- it
+# must be wired here, not just in /taste:
+has "$S" "**If \`TASTE.md\` calls for a native feel** — direct manipulation, velocity"
+has "$S" "invoke \`apple-design\` alongside \`animate\` for"
 has "$S" "figma-cli export-jsx <nodeId> --pretty        # structural scaffold"
 has "$S" "figma-cli export css                          # or: export tailwind | export dtcg tokens.json"
 has "$S" "Screenshot the built UI at the same viewport as the Figma frame and diff against"

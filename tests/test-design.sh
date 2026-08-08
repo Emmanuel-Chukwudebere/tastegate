@@ -17,7 +17,13 @@ has "$S" "\`--verify\` returns a screenshot in the same call, so seeing the resu
 has "$S" "bash scripts/gates.sh <nodeId> \"<ComponentName>\""
 has "$S" "\`qa-brief.md\` as the brief. Model: **sonnet**. The screenshot and"
 has "$S" "**Maximum 3 QA passes.** Escalate to opus"
+# Must restate RUBRIC.md's escalation condition as same-dimension, not any-dimension:
+has "$S" "when \`RUBRIC.md\`'s condition is met (the same dimension ≤ 2 twice)"
 has "$S" "**If it does not exist, refuse** and direct the"
+# scripts/ must have a documented inline equivalent so README's "nothing
+# hard-depends on scripts/" claim is true under a single-skill install:
+has "$S" "(a single-skill install), run its checks directly: \`figma-cli --version\` and"
+has "$S" "**Without \`scripts/\`**, run the same"
 # Real variable names must be resolved before writing var: references:
 has "$S" "Resolve real variable names with \`figma-cli var list\` before writing a \`var:\`"
 # Unresolved-variable warning is a build failure, not a cosmetic warning:

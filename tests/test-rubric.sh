@@ -9,7 +9,11 @@ has "$R" "0-5"
 has "$R" "the score, cited evidence (what you"
 has "$R" "MOTION.md"
 has "$R" "TYPOGRAPHY.md"
-has "$R" "escalate that pass to"
+# Escalation must fire on the SAME dimension across two consecutive passes,
+# never on any two unrelated low scores -- anchor carries the noun and the
+# modal ("escalate that pass") on one line so a reversion to "any dimension"
+# fails this check (mirrors qa-brief.md and review/SKILL.md, which must agree).
+has "$R" "If the same dimension scores ≤ 2 on two consecutive passes, **escalate that pass"
 
 S=skills/design/SLOP.md
 has "$S" "#F4F1EA"
@@ -36,6 +40,10 @@ has "$F" "neutral-300, neutral-900, neutral-white"
 has "$F" 'bg="var:neutral/900"` resolved cleanly with no'
 # Collection pin for disambiguating multiple collections.
 has "$F" "pin resolution with"
+# spec's positional <component> must precede --check -- `spec --check <id>`
+# fails live with "missing required argument 'component'" (verified against
+# --help), so the anchor carries the full correct call shape:
+has "$F" "spec <component> --check <nodeId> --tolerance 2"
 
 echo "PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ]

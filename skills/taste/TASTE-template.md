@@ -49,7 +49,7 @@ Variant: <e.g. Linear>
 Appetite: <near-zero | restrained | considered | expressive>
 Notable references: <measured values where available, marked inferred otherwise>
 
-Standards in `MOTION.md` apply regardless of appetite.
+Standards in `design/MOTION.md` apply regardless of appetite.
 
 ## Signature element
 

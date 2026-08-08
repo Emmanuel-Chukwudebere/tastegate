@@ -26,7 +26,16 @@ has "$R" "Never apply fixes from this skill. If the user wants them applied, tha
 has "$R" "invoke \`improve-animations\` for a repo-wide motion audit with"
 has "$R" "Invoke \`review-animations\` on the code diff or implementation. Its posture is"
 has "$R" "Dispatch a sub-agent (model **sonnet**) with the brief in"
-has "$R" "Escalate that pass to **opus** when any dimension scores"
+has "$R" "Escalate that pass to **opus** when the same dimension scores"
+# The inline fallback (for a single-skill install with no RUBRIC.md present)
+# must state the identical same-dimension rule, not just the process-step
+# escalation above -- otherwise the fallback and the full rule could drift
+# apart from each other even after RUBRIC.md and review/SKILL.md agree.
+has "$R" 'an exact fix, never "improve the spacing." Escalate to opus when the same'
+# /review ships standalone -- an absent TASTE.md must degrade to sensible
+# breakpoint defaults, not fail or silently skip the dimension (mirrors how
+# /explore proceeds when TASTE.md is absent):
+has "$R" "default widths 390 / 834 / 1440 rather than failing or silently skipping the"
 
 echo "PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ]

@@ -34,6 +34,6 @@ Do not guess at an unfamiliar framework's idioms.
 
 ## Motion per target
 
-All targets use the curves and durations in `MOTION.md`. Only the expression
+All targets use the curves and durations in `design/MOTION.md`. Only the expression
 differs. React Native has no CSS, so curves are ported to Reanimated's easing
 functions while preserving the same timing values.

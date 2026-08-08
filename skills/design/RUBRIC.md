@@ -48,8 +48,11 @@ breakpoints are a finding.
 - **3-4** — acceptable, with noted improvements.
 - **0-2** — must fix before this is shown to the user.
 
-If any dimension scores ≤ 2 on two consecutive passes, **escalate that pass to
-Opus** rather than looping on Sonnet. Say plainly that you escalated and why.
+If the same dimension scores ≤ 2 on two consecutive passes, **escalate that pass
+to Opus** rather than looping on Sonnet. Say plainly that you escalated and why.
+This fires when one specific dimension resists improvement across passes, never
+when two unrelated dimensions happen to score low in consecutive passes — that
+would escalate far too eagerly.
 
 Maximum 3 QA passes per build. On exit, report remaining findings rather than
 looping silently.

@@ -15,8 +15,8 @@ resolves them for Claude Code.
 ## QA sub-agent dispatch
 
 Dispatch with `model: "sonnet"` for the QA pass. Escalate to `model: "opus"` when
-`RUBRIC.md`'s escalation condition is met (any dimension ≤ 2 on two consecutive
-passes).
+`RUBRIC.md`'s escalation condition is met (the same dimension ≤ 2 on two
+consecutive passes).
 
 The sub-agent brief must include: the screenshot path, the relevant standards
 file paths, and `TASTE.md`. Screenshots and standards load in the sub-agent's

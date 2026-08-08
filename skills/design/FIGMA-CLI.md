@@ -84,7 +84,7 @@ collections, each defining its own `neutral/900`), pin resolution with
 | See | `verify [nodeId]` (add `--base64` for inline) |
 | Undo | `undo` (removes nodes from the last render) |
 | Reuse | `spec <component>`, `instantiate <name>` |
-| Enforce | `spec --check <nodeId> --tolerance 2` (exit 1 on violation) |
+| Enforce | `spec <component> --check <nodeId> --tolerance 2` (exit 1 on violation) |
 | Extract DS | `extract --sections <list>` (12 sections), `--pages`, `--selection`, `--split` |
 | Import DS | `import <DESIGN.md\|tailwind.config.js\|globals.css\|tokens.json\|storybook-url>` |
 | Export tokens | `export css`, `export tailwind`, `export dtcg [file]` |

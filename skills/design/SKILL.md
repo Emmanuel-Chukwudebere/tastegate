@@ -21,7 +21,12 @@ silently skip a check while implying it ran.
 
 ## Preconditions
 
-1. Run `bash scripts/preflight.sh`. Stop on hard failure.
+1. Run `bash scripts/preflight.sh`. Stop on hard failure. **Without `scripts/`**
+   (a single-skill install), run its checks directly: `figma-cli --version` and
+   `figma-cli status` (hard — stop if either fails), whether
+   `~/.claude/skills/emil-design-eng` or `~/.agents/skills/emil-design-eng`
+   exists (soft), and whether `playwright` and `figma-use` resolve via `npm root
+   -g` (soft — both are optional dependencies).
 2. Read `.claude/design/TASTE.md`. **If it does not exist, refuse** and direct the
    user to `/claude-design:taste`. Grounding is mandatory — building without it
    produces exactly the untethered output this plugin exists to prevent.
@@ -75,7 +80,9 @@ bash scripts/gates.sh <nodeId> "<ComponentName>"
 
 This runs `lint --fix`, `spec --check`, and `a11y audit`. All are free and exact.
 **A `spec --check` failure is a hard stop, not a finding** — the build is off-spec;
-fix it before critique is worth running.
+fix it before critique is worth running. **Without `scripts/`**, run the same
+three `figma-cli` calls directly in that order — nothing in `gates.sh` beyond
+composing them.
 
 **An unresolved-variable warning from `render` is a build failure, not a
 cosmetic warning.** It is free to detect from the command's own output, so
@@ -91,8 +98,8 @@ the screenshot into this context.
 
 ### 7. Fix and re-verify
 Apply the findings, re-render, re-gate. **Maximum 3 QA passes.** Escalate to opus
-when `RUBRIC.md`'s condition is met (any dimension ≤ 2 twice). On exit after 3
-passes, report remaining findings rather than looping silently.
+when `RUBRIC.md`'s condition is met (the same dimension ≤ 2 twice). On exit after
+3 passes, report remaining findings rather than looping silently.
 
 ### 8. Show
 Only now present the result. The user sees post-QA work.

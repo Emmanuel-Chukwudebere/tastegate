@@ -15,6 +15,13 @@ has "$M" "prefers-reduced-motion"
 has "$M" "(hover: hover) and (pointer: fine)"
 has "$M" "Animate **only \`transform\`"
 has "$M" "\`opacity\`**. These skip layout and paint"
+# The 300ms-ceiling / modal-exception ambiguity must be resolved explicitly:
+# modal/drawer's wider range applies ONLY to a full-viewport transition, and
+# every other element (dropdown included) stays bound by its own range AND
+# the 300ms ceiling -- this is the case the spec's 450ms-dropdown test plants.
+has "$M" "**Modal/drawer is the sole exception to the 300ms ceiling, and only for a"
+has "$M" "violation regardless of the modal exception; it does not inherit modal/drawer's"
+has "$M" "A 450ms dropdown is a violation"
 
 T=skills/design/TYPOGRAPHY.md
 has "$T" "65"

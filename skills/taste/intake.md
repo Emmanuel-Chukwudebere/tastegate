@@ -76,7 +76,7 @@ return { motion: out.slice(0, 40), keyframes: kf.slice(0, 10) };
 ```
 
 This yields the reference's real durations and cubic-beziers — the exact values
-`MOTION.md` scores against. It also fingerprints libraries: a `--sonner` or
+`design/MOTION.md` scores against. It also fingerprints libraries: a `--sonner` or
 `--vaul` custom property, or a `data-state="open"` attribute, identifies provenance.
 
 **Interaction states** — drive the page and screenshot each state:
@@ -91,7 +91,7 @@ and whether it overshoots.
 (a Framer Motion spring's stiffness and damping are computed at runtime) are not
 measurable, nor are scroll-linked timelines in full. For those, use
 `animation-vocabulary` to name the effect precisely, take conforming values from
-`MOTION.md`, and record the result in `TASTE.md` as **inferred**, never as measured.
+`design/MOTION.md`, and record the result in `TASTE.md` as **inferred**, never as measured.
 
 ## 4. Figma moodboard page
 

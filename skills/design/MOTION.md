@@ -43,7 +43,8 @@ Custom curves:
 
 ## 4. Duration
 
-**UI animations stay under 300ms.**
+**UI animations stay under 300ms.** This ceiling governs every element below
+except one.
 
 | Element | Range |
 |---|---|
@@ -54,7 +55,16 @@ Custom curves:
 | Micro-interaction | 100–150ms |
 | Standard UI | 150–250ms |
 
-Where ranges conflict, the tighter bound wins.
+**Modal/drawer is the sole exception to the 300ms ceiling, and only for a
+full-viewport modal or drawer transition** — the extra weight reads as
+appropriate for something that takes over the whole screen. A dropdown,
+popover, tooltip, or button press that exceeds its own range above is a
+violation regardless of the modal exception; it does not inherit modal/drawer's
+allowance just because it is also an overlay. A 450ms dropdown is a violation
+on two counts: it blows both its own 150–250ms range and the 300ms ceiling.
+
+Where ranges conflict against an external authority (Emil's skills, when
+installed — see the top of this file), the tighter bound wins.
 
 Asymmetric timing: deliberate user actions (press, hold, destructive confirm)
 animate slower for weight; system responses snap. Symmetric timing on a

@@ -13,6 +13,8 @@ has "$R" "# Runtime: Grok (build mode)"
 # Claude Code
 has "$R" '| Dispatch a sub-agent | `Agent` tool, `subagent_type: "general-purpose"` |'
 has "$R" 'Dispatch with `model: "sonnet"` for the QA pass.'
+# Must restate RUBRIC.md's escalation condition as same-dimension, not any-dimension:
+has "$R" "escalation condition is met (the same dimension ≤ 2 on two"
 # Codex
 has "$R" "Sub-agent dispatch requires multi-agent support. Add to \`~/.codex/config.toml\`:"
 has "$R" '| Dispatch a sub-agent | `spawn_agent` / `wait_agent` / `close_agent` |'

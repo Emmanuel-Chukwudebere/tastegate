@@ -26,7 +26,12 @@ concrete options over open prompts. Record answers directly into `TASTE.md`.
 6. **Motion appetite.** Which is closest: near-zero motion, productivity-tool
    restraint (Linear, Raycast); considered polish at moments that matter; or
    expressive and playful? Note that keyboard-initiated actions never animate
-   regardless of the answer.
+   regardless of the answer. Translate a vague description ("bouncy", "snappy",
+   "the iOS rubber-band thing") into its exact term and curve with Emil's
+   `animation-vocabulary` skill before recording it. If the answer calls for a
+   native, gesture-driven feel — direct manipulation, velocity handoff,
+   translucent materials — invoke `apple-design` and record that stance in
+   `TASTE.md` so `/ship` builds toward it later.
 
 7. **Icon set.** Do you have one? (See `intake.md` for resolution — Iconsax needs
    the `<SVG>` path.)

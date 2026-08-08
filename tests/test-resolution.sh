@@ -44,9 +44,19 @@ nothas "$EXPLORE" "skills/explore/"
 nothas "$REVIEW" "skills/review/"
 nothas "$TASTE" "skills/taste/"
 # No SKILL.md should reference any skills/ path at all, own or otherwise —
-# sibling references use the shorter <skill>/<FILE> form instead.
+# sibling references use the shorter <skill>/<FILE> form instead. Exempt the
+# legitimate external exception: ~/.claude/skills/ and ~/.agents/skills/ are
+# the cross-runtime install locations for Emil's (unrelated, outside-the-
+# plugin) skills, not a self-prefixed reference into THIS plugin's own tree.
 for f in "$DESIGN" "$SHIP" "$EXPLORE" "$REVIEW" "$TASTE"; do
-  nothas "$f" "skills/"
+  n=$(grep -icF "skills/" "$f" 2>/dev/null)
+  external=$(grep -icE '\.(claude|agents)/skills/' "$f" 2>/dev/null)
+  n="${n:-0}"; external="${external:-0}"
+  if [ "$n" -eq "$external" ]; then
+    echo "  PASS: $(basename $f) omits 'skills/' (beyond the external emil-design-eng exception)"; PASS=$((PASS+1))
+  else
+    echo "  FAIL: $(basename $f) must NOT have 'skills/' beyond the external emil-design-eng exception ($n found, $external excused)"; FAIL=$((FAIL+1))
+  fi
 done
 
 # --- 3. explore/ and review/ carry an inline fallback and name the ---
@@ -58,10 +68,15 @@ uniq1 "$REVIEW" "sibling file is authoritative whenever it is present"
 uniq1 "$EXPLORE" "reject the AI-default clusters"
 uniq1 "$EXPLORE" "warm cream (near \`#F4F1EA\`) paired with serif display and terracotta"
 uniq1 "$REVIEW" "score all eight dimensions"
-uniq1 "$REVIEW" "Escalate to opus when any"
+# Escalation condition must be same-dimension, not any-dimension (Finding 3):
+uniq1 "$REVIEW" "Escalate to opus when the same"
 
 # --- 4. Mechanical check: every <skill>/<FILE> sibling reference resolves ---
 #        on disk under skills/<skill>/<FILE>. Catches typos and drift.
+#        Scoped to skills/*/SKILL.md, since the sibling-path form
+#        (`design/MOTION.md`) is only ever written from a *different*
+#        skill's directory looking across; a file already inside design/
+#        would drop the prefix (see part 4b).
 BACKTICK='`'
 PATTERN="${BACKTICK}(design|ship|explore|review|taste)/[A-Za-z0-9_.-]+\\.md${BACKTICK}"
 REFS="$(grep -noE "$PATTERN" skills/*/SKILL.md \
@@ -77,6 +92,40 @@ else
       echo "  FAIL: skills/$ref does not exist (referenced as \`$ref\`)"; FAIL=$((FAIL+1))
     fi
   done <<< "$REFS"
+fi
+
+# --- 4b. Mechanical check: every bare `<FILE>.md` reference in ANY markdown ---
+#         file under skills/ (not just SKILL.md) resolves inside that same
+#         file's own skill directory. This is the check the reviewer proved
+#         vacuous — it stopped at SKILL.md, so a broken bare `MOTION.md` in a
+#         supporting file (states.md, FRAMEWORKS.md, TASTE-template.md,
+#         intake.md) went undetected. Files that live outside the plugin
+#         entirely (the consuming project's TASTE.md, registry.md, and a
+#         generated DESIGN.md) are excluded — they are never resolvable
+#         under skills/ by design.
+EXTERNAL_SKIP="TASTE.md registry.md DESIGN.md"
+BARE_PATTERN="${BACKTICK}[A-Za-z][A-Za-z0-9_.-]*\\.md${BACKTICK}"
+BARE_CHECKED=0
+for f in skills/*/*.md; do
+  SKILLDIR="$(dirname "$f")"
+  FILEREFS="$(grep -noE "$BARE_PATTERN" "$f" 2>/dev/null \
+    | sed -E 's/^[0-9]+://' | tr -d "$BACKTICK" | sort -u)"
+  [ -z "$FILEREFS" ] && continue
+  while IFS= read -r ref; do
+    [ -z "$ref" ] && continue
+    SKIP=0
+    for ext in $EXTERNAL_SKIP; do [ "$ref" = "$ext" ] && SKIP=1; done
+    [ "$SKIP" -eq 1 ] && continue
+    BARE_CHECKED=$((BARE_CHECKED+1))
+    if [ -f "$SKILLDIR/$ref" ]; then
+      echo "  PASS: $SKILLDIR/$ref exists (bare \`$ref\` in $f)"; PASS=$((PASS+1))
+    else
+      echo "  FAIL: $SKILLDIR/$ref does not exist (bare \`$ref\` in $f)"; FAIL=$((FAIL+1))
+    fi
+  done <<< "$FILEREFS"
+done
+if [ "$BARE_CHECKED" -eq 0 ]; then
+  echo "  FAIL: no bare \`<FILE>.md\` references found to check"; FAIL=$((FAIL+1))
 fi
 
 echo "PASS=$PASS FAIL=$FAIL"
