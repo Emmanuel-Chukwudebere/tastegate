@@ -13,7 +13,10 @@ Desktop directly over CDP. No API key, no rate limits.
 
 ## JSX dialect
 
-**Elements:** `<Frame> <Rectangle> <Ellipse> <Text> <Line> <Image> <SVG> <Icon>`
+**Elements:** `<Frame> <Text> <Rect>`/`<Rectangle>` `<Ellipse>`/`<Circle>` `<Image>` `<Icon>` `<Slot>`
+
+That list is the parser's tag regex verbatim. **There is no `<SVG>` and no `<Line>`**, and
+`<Instance>` parses but cannot render — see the icon section below for what to use instead.
 
 | Concern | Syntax |
 |---|---|
@@ -113,6 +116,48 @@ figma-cli eval "(async () => (await figma.listAvailableFontsAsync()).filter(f =>
 
 `figma-cli eval` and `run` reject top-level `await` and bare `return`. Wrap the
 body in an async IIFE — `(async () => { … })();` — and end with the value.
+
+## `<Icon>` reaches Iconify only, and a miss renders as an empty frame with exit 0
+
+`<Icon name="prefix:name">` fetches from `api.iconify.design` at render time. Three
+consequences, all verified live:
+
+1. **A local component is not reachable through `<Icon>`.** `name="vuesax/twotone/menu"`
+   has no colon, never becomes a fetch, and produces a frame with **zero children** —
+   invisible, with no warning and exit 0.
+2. **Iconsax is not on Iconify.** Neither `iconsax` nor `vuesax` is a collection there
+   (`/collections?prefixes=iconsax,vuesax` returns nothing; searching `magic-star`
+   returns only `reicon:`). A file whose taste profile pins Iconsax must source glyphs
+   from its own local components.
+3. **A fetch failure is silent.** `prefetchIconSvgs` swallows the error and falls back to
+   a placeholder rectangle, so a wrong prefix renders as a filled square and a network
+   failure renders as nothing. Both exit 0.
+
+**`<SVG>` does not exist.** The parser's tag list is
+`Frame|Text|Icon|Rect|Rectangle|Ellipse|Circle|Image|Slot|Instance` — there is no `SVG`
+element, and using one fails with `SVG is not defined`.
+
+**`<Instance>` parses but its codegen is unreachable**, so it also fails with
+`Instance is not defined`. To place a local component, use the Plugin API through
+`eval`/`run`:
+
+```js
+const comp = await figma.getNodeByIdAsync('38:30805');
+const inst = comp.createInstance();
+parent.appendChild(inst);
+```
+
+For a glyph that exists in neither Iconify nor the local set, build it with
+`figma.createNodeFromSvg(svgString)`, clear the wrapper's fills, resize, then recolor
+the children — `createNodeFromSvg` returns a Frame whose fill shows as a filled square
+if left alone.
+
+**Always assert icon children after rendering.** The count is the only signal:
+
+```bash
+figma-cli eval "(async () => { const n = await figma.getNodeByIdAsync('<id>'); \
+  return n.findAll(x => x.name === 'Icon').map(x => x.name + ':' + x.children.length).join(' '); })();"
+```
 
 ## `verify` writes to `/tmp`, which is `C:\tmp` on Windows
 

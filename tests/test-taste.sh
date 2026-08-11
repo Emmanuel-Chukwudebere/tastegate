@@ -31,7 +31,13 @@ has "$I" "as **inferred**, never as measured."
 # analyze-url is optional (needs playwright); fallback must mark values inferred:
 has "$I" "if it is unavailable, capture the reference visually via Playwright MCP"
 has "$I" "**Iconsax is not on Iconify.**"
-has "$I" "unhosted set uses \`<SVG>\` rather than a silent lookalike substitution.**"
+has "$I" "unhosted set is emitted with \`createNodeFromSvg\` rather than replaced by a silent lookalike substitution.**"
+# <SVG> is not a real element — the parser rejects it. A doc that recommends it sends
+# every build into a dead end, so assert the correction with its reason attached.
+has "$I" "**There is no \`<SVG>\` element**"
+# A pinned variant can lack the reference's glyph; substituting from another variant
+# violates the profile. Anchor carries the prohibition, not just the observation.
+has "$I" "into another variant to fill the gap breaks the profile's own rule."
 
 V=skills/taste/interview.md
 has "$V" "**Typography temperament.** Which reads right: geometric and neutral;"
@@ -45,7 +51,7 @@ has "$V" "invoke \`apple-design\` and record that stance in"
 
 T=skills/taste/TASTE-template.md
 has "$T" "Accent appears in at most two placements per screen."
-has "$T" "Path: <Iconify \`<Icon>\` | local \`<SVG>\` directory>"
+has "$T" "Path: <Iconify \`<Icon>\` | Figma components via \`createInstance()\` | local SVG via \`createNodeFromSvg\`>"
 has "$T" "## Breakpoint behaviour"
 has "$T" "Enforced constraints, recorded verbatim from the user."
 

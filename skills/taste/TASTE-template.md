@@ -41,7 +41,7 @@ Density stance: <airy | balanced | dense>
 ## Icon set
 
 Primary: <prefix or local source>
-Path: <Iconify `<Icon>` | local `<SVG>` directory>
+Path: <Iconify `<Icon>` | Figma components via `createInstance()` | local SVG via `createNodeFromSvg`>
 Variant: <e.g. Linear>
 
 ## Motion

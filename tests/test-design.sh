@@ -59,6 +59,16 @@ has "$S" "Also gate the font bindings.**"
 # lint/spec gates do: it is free, and a model hunting it is not.
 ordered "$S" "Also gate the font bindings" "Dispatch in the background"
 
+# Convergence rules, added after a live hero spent ~20 measure-adjust-export rounds
+# closing deltas that were no longer visible. Each anchor carries the numeric band or
+# the cap, since a doc that lost the number would restore the unbounded loop.
+has "$S" "**Converged means stop: ±8pt position, ±3pt cap-height.**"
+has "$S" "**At most 2 geometry-correction rounds between QA passes.**"
+has "$S" "**Derive type size from one rendered probe, never from a cap-height ratio.**"
+# The tolerance must be stated before the round cap, so a builder reads "when am I done"
+# before "how many tries do I get".
+ordered "$S" "Converged means stop" "At most 2 geometry-correction rounds"
+
 Q=skills/design/qa-brief.md
 has "$Q" "**Budget: \`[N]\` tool calls.**"
 has "$Q" "do not re-derive"

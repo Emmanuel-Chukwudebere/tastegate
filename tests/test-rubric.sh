@@ -58,5 +58,16 @@ has "$F" "mkdir -p /c/tmp"
 # eval/run reject top-level await and bare return.
 has "$F" "reject top-level"
 
+# <Icon> is Iconify-only and fails silently — found live when five icons rendered as
+# empty frames with exit 0, and again when Iconsax prefixes rendered filled squares.
+# Anchors carry the failure mode, so a doc that softened it to "may not resolve" fails.
+has "$F" "a miss renders as an empty frame with exit 0"
+has "$F" "**A local component is not reachable through \`<Icon>\`.**"
+has "$F" "**Iconsax is not on Iconify.**"
+has "$F" "**\`<SVG>\` does not exist.**"
+has "$F" "**\`<Instance>\` parses but its codegen is unreachable**"
+# The assertion that catches it must be present, not just the warning.
+has "$F" "**Always assert icon children after rendering.**"
+
 echo "PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ]

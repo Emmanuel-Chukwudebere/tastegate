@@ -34,7 +34,7 @@ concrete options over open prompts. Record answers directly into `TASTE.md`.
    `TASTE.md` so `/ship` builds toward it later.
 
 7. **Icon set.** Do you have one? (See `intake.md` for resolution — Iconsax needs
-   the `<SVG>` path.)
+   a local source or the file's own icon sheet — there is no `<SVG>` element.)
 
 8. **Breakpoints.** Which widths must this hold at? Default 390 / 834 / 1440.
 

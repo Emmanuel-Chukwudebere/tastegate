@@ -131,16 +131,30 @@ a UI reads as assembled rather than designed — name exactly one primary set.
 Resolution order:
 
 ```
-Iconify-hosted set  → <Icon name="prefix:name" />   preferred: one call, no assets
-Unhosted set        → <SVG>                          from a local or npm source
+Iconify-hosted set          → <Icon name="prefix:name" />       one call, no assets
+Already in the Figma file   → createInstance() via eval         reuse, stays linked
+Neither                     → figma.createNodeFromSvg(str)      from a local/npm source
 ```
+
+**There is no `<SVG>` element** — it is absent from the render parser's tag list and
+fails with `SVG is not defined`. Emit unhosted glyphs through `createNodeFromSvg`
+inside `eval`/`run`, per `design/FIGMA-CLI.md`.
 
 **Iconsax is not on Iconify.** Verified: neither `iconsax` nor `vuesax` appears in
 its 231 collections (searched by prefix, name, and author; `/collection?prefix=`
 returns *Not found* for both). Iconsax and Vuesax are the same project; it simply
-is not hosted there. For Iconsax, ask the user for a local SVG directory or npm
-package and use the `<SVG>` path, pinning the variant (Linear, Bold, Broken,
-Outline, Two-tone, Bulk) so icons stay consistent.
+is not hosted there. For Iconsax, first check whether the glyphs are **already in the
+Figma file** — an imported icon sheet is the best source, since `createInstance()` keeps
+them linked. Otherwise ask the user for a local SVG directory or npm package and emit via
+`createNodeFromSvg`. Either way, pin the variant (Linear, Bold, Broken, Outline,
+Two-tone, Bulk) so icons stay consistent.
+
+**A pinned variant may not contain the glyph the reference shows.** Live example: a
+reference used a filled 4-point sparkle and a 3-line burger; the file's twotone set had
+`magic-star` (a swirl, not a 4-point star) and `menu` (a 4-dot grid, not lines). The
+correct move is to find the set's own nearest true match — `textalign-justifycenter` *is*
+a twotone 3-line glyph — or draw the missing one in the set's visual language. Reaching
+into another variant to fill the gap breaks the profile's own rule.
 
 To check whether a named set is hosted:
 
@@ -152,6 +166,6 @@ If the user has no commitment, Iconify-hosted sets with comparable variant axes
 include `solar` (7,401 icons: Linear, Bold, Broken, Line-duotone, Bold-duotone,
 Outline), `ph` (9,072), `tabler` (6,184), `lucide` (1,756), `heroicons` (1,288).
 Offer these as suggestions only — **the user's named set always wins, and an
-unhosted set uses `<SVG>` rather than a silent lookalike substitution.**
+unhosted set is emitted with `createNodeFromSvg` rather than replaced by a silent lookalike substitution.**
 
 Never hand-draw icon paths.

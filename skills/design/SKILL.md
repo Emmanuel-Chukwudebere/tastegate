@@ -70,8 +70,16 @@ Resolve real variable names with `figma-cli var list` before writing a `var:`
 reference — `export css`'s hyphenated names (`--neutral-900`) are not valid
 `var:` targets; the slash form (`var:neutral/900`) is, per `FIGMA-CLI.md`.
 
-Use `<Icon name="prefix:name">` with the set from `TASTE.md`, or `<SVG>` for an
-unhosted set. Never hand-draw paths.
+Use `<Icon name="prefix:name">` with the set from `TASTE.md`. **`<Icon>` resolves through
+Iconify only** — a local component name, a wrong prefix, or a set Iconify does not carry
+all render as an empty frame or a filled square, with no warning and exit 0. For a local
+component use `createInstance()` via `eval`; for an unhosted glyph use
+`figma.createNodeFromSvg`. Both are documented in `FIGMA-CLI.md`. Never hand-draw paths,
+and **never substitute a different icon variant** to work around a lookup failure — the
+profile pins the variant.
+
+**Assert the icon children after rendering.** A zero-child icon frame is the signature of
+a failed lookup and is invisible in the render's own output.
 
 ### 5. Gate — deterministic, before any model critique
 ```bash
@@ -152,6 +160,23 @@ worth far less than the wall-clock it costs.
 Apply the findings, re-render, re-gate. **Maximum 3 QA passes.** Escalate to opus
 when `RUBRIC.md`'s condition is met (the same dimension ≤ 2 twice). On exit after
 3 passes, report remaining findings rather than looping silently.
+
+**Converged means stop: ±8pt position, ±3pt cap-height.** Inside that band the build
+matches the reference — record the residual and move on. A measurement always returns
+a non-zero delta, so without a stated tolerance every comparison reads as actionable
+and the loop never ends. Measured live: one hero spent roughly 20 measure-adjust-export
+rounds closing deltas from 30pt to 5pt, long past the point the difference was visible.
+
+**At most 2 geometry-correction rounds between QA passes.** The 3-pass cap governs the
+auditor; this one governs you. After the second round, ship what you have and report
+what is still off, with its number.
+
+**Derive type size from one rendered probe, never from a cap-height ratio.** Cap-height
+divided by an assumed 0.72 is wrong per family and costs a round per iteration. Render
+the string once at a known size, measure the cap-height that came back, then scale:
+`size = probeSize × (targetCap / measuredCap)`. One round instead of four — the same
+hero converged 50 → 41 → 34pt across three wasted rounds before landing where a single
+probe would have put it.
 
 ### 8. Show
 Only now present the result. The user sees post-QA work.
