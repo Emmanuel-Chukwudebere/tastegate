@@ -230,6 +230,24 @@ printf '%s' "$script" > "$SCRATCH_SH/gen.js"
 figma-cli run "$SCRATCH_WIN/gen.js"
 ```
 
+## An invisible node exports a blank PNG at exit 0
+
+`export node` and `verify` both succeed on a node with `visible = false`, printing
+`✓ Exported … (390x840)` and writing a **~149-byte fully transparent PNG**. Nothing in
+the output distinguishes it from a real export.
+
+Check the file size, not the exit code. A real 390×840 frame is tens of kilobytes:
+
+```bash
+figma-cli export node <id> --scale 2 -o out.png
+[ "$(wc -c < out.png)" -gt 1000 ] || echo "BLANK EXPORT — check node.visible"
+```
+
+Found live: a hero frame silently became `visible=false` mid-session with all eight
+child sections still `visible=true`, so the tree looked healthy and every export was
+empty. `figma-cli get <id>` reports the flag; `visible` is the first thing to check
+when an export looks wrong.
+
 ## `verify` writes to `/tmp`, which is `C:\tmp` on Windows
 
 `figma-cli verify <nodeId>` saves to `/tmp/figma-verify-<id>.png`. Node resolves

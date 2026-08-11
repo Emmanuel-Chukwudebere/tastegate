@@ -115,5 +115,13 @@ P=scripts/preflight.sh
 has "$P" "PREFLIGHT: figma-daemon AUTH FAILED"
 has "$P" "figma-cli daemon restart"
 
+# A hidden node exports a ~149-byte transparent PNG at exit 0, so a blank screenshot
+# can reach the QA pass with no signal anywhere. Mutation-verified: setting
+# visible=false makes this gate report BLANK (149 bytes).
+has "$G" "GATE: export not blank"
+has "$G" "check node.visible via"
+# Reused DS instances carry their own type — a "no Inter" check passes right over it.
+has "$G" "GATE: font MIXED"
+
 echo "PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ]

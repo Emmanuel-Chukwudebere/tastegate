@@ -69,5 +69,9 @@ has "$F" "**\`<Instance>\` parses but its codegen is unreachable**"
 # The assertion that catches it must be present, not just the warning.
 has "$F" "**Always assert icon children after rendering.**"
 
+# Blank exports: exit 0 plus a success message on an invisible node.
+has "$F" "An invisible node exports a blank PNG at exit 0"
+has "$F" "Check the file size, not the exit code."
+
 echo "PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ]

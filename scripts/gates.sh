@@ -91,8 +91,21 @@ cat > "$FONT_RUN_SH" <<EOF
     fams[k] = (fams[k] || 0) + 1;
   }
   const inter = texts.filter(t => t.fontName.family === "Inter");
-  return "FONT: " + texts.length + " text node(s)\n" +
+  // Count distinct families. Text inside a reused DS component instance keeps that
+  // system's font, so a frame can pass a "no Inter" check while still mixing two or
+  // three families — found live: the CTA label came through as Syne and the avatar
+  // initials as Plus Jakarta Sans inside an otherwise all-Outfit hero.
+  const distinct = [...new Set(texts.map(t => t.fontName.family))];
+  const inInstance = texts.filter(t => {
+    let p = t.parent;
+    while (p) { if (p.type === "INSTANCE") return true; p = p.parent; }
+    return false;
+  });
+  const instFams = [...new Set(inInstance.map(t => t.fontName.family))];
+  return "FONT: " + texts.length + " text node(s), " + distinct.length + " famil" + (distinct.length === 1 ? "y" : "ies") + "\n" +
     Object.entries(fams).map(([k, v]) => "  " + v + "x  " + k).join("\n") +
+    (instFams.length ? "\nFONT: inside component instances: " + instFams.join(", ") : "") +
+    (distinct.length > 1 ? "\nFONT: MIXED FAMILIES — " + distinct.join(" + ") + ". Reconcile against TASTE.md before shipping." : "") +
     (inter.length ? "\nFONT: INTER PRESENT on " + inter.length + " node(s) — a font that never bound." : "\nFONT: no Inter present.");
 })();
 EOF
@@ -103,5 +116,24 @@ if echo "$FONT_OUT" | grep -q "INTER PRESENT"; then
   echo "GATE: font VIOLATION - unbound font. Load the family, then assign, per FIGMA-CLI.md."
   GATE_FAIL=1
 fi
+if echo "$FONT_OUT" | grep -q "MIXED FAMILIES"; then
+  echo "GATE: font MIXED - reused component instances carry their own type. Override or accept explicitly."
+  GATE_FAIL=1
+fi
+
+# A node with visible=false exports a ~149-byte transparent PNG and still exits 0,
+# so the screenshot the QA pass judges can be blank with no signal anywhere.
+echo "GATE: export not blank"
+SHOT="$SCRATCH_SH/gate-shot-$$.png"
+SHOT_WIN="$SCRATCH_WIN/gate-shot-$$.png"
+figma-cli export node "$NODE_ID" --scale 2 -o "$SHOT_WIN" >/dev/null 2>&1
+SHOT_BYTES="$(wc -c < "$SHOT" 2>/dev/null || echo 0)"
+if [ "${SHOT_BYTES:-0}" -lt 1000 ]; then
+  echo "GATE: export BLANK (${SHOT_BYTES} bytes) - check node.visible via 'figma-cli get $NODE_ID'."
+  GATE_FAIL=1
+else
+  echo "GATE: export OK (${SHOT_BYTES} bytes)"
+fi
+rm -f "$SHOT"
 
 exit "$GATE_FAIL"
