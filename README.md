@@ -94,14 +94,20 @@ and no reinstall.
 
 | Command | When |
 |---|---|
+| **`/claude-design`** | **Don't know which stage? Start here.** Routes the request and runs the stages in order |
 | `/claude-design:taste` | First, in any new project. Builds the taste profile |
 | `/claude-design:explore` | Direction not settled — three real options |
 | `/claude-design:design` | Build UI in Figma, self-checked before you see it |
 | `/claude-design:ship` | Figma → code, framework of your choice |
 | `/claude-design:review` | Scored audit of existing design or code |
 
-Start with `taste`. The other skills refuse or warn without a profile, by design
-— grounding is the whole thesis.
+The router decides which stages a request needs — it runs `taste` when no profile
+exists, `explore` when the direction is unsettled, and `design` before `ship` so the
+code has a gated frame to measure against. Call a stage directly when you already
+know which one you want.
+
+Every stage refuses or warns without a taste profile, by design — grounding is the
+whole thesis.
 
 ## How taste is stored
 

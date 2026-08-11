@@ -53,7 +53,11 @@ has "$M" "claude --plugin-dir /path/to/claude-design"
 has "$M" "npx skills@latest add emmanuel-chukwudebere/claude-design"
 has "$M" "npm i -g figma-ds-cli                        # Figma control, no API key"
 has "$M" "npx skills@latest add emilkowalski/skills    # motion + interaction layer (MIT)"
-has "$M" "Start with \`taste\`. The other skills refuse or warn without a profile, by design"
+# Grounding must stay mandatory in the README, and the router must be documented as
+# the default entry point — a router nobody knows about routes nothing.
+has "$M" "Every stage refuses or warns without a taste profile, by design"
+has "$M" "**Don't know which stage? Start here.**"
+has "$M" "and \`design\` before \`ship\` so the"
 
 echo "PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ]

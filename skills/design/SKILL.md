@@ -22,8 +22,10 @@ silently skip a check while implying it ran.
 ## Preconditions
 
 1. Run `bash scripts/preflight.sh`. Stop on hard failure. **Without `scripts/`**
-   (a single-skill install), run its checks directly: `figma-cli --version` and
-   `figma-cli status` (hard — stop if either fails), whether
+   (a single-skill install), run its checks directly: `figma-cli --version`,
+   `figma-cli status`, and **`figma-cli daemon status`** (all hard — stop if any
+   fails). The daemon check is not optional: a stale token makes every `eval`/`run`
+   cost ~20s instead of ~3s, and `status` reports `Connected` anyway. Also check whether
    `~/.claude/skills/emil-design-eng` or `~/.agents/skills/emil-design-eng`
    exists (soft), and whether `playwright` and `figma-use` resolve via `npm root
    -g` (soft — both are optional dependencies).
@@ -86,11 +88,17 @@ a failed lookup and is invisible in the render's own output.
 bash scripts/gates.sh <nodeId> "<ComponentName>"
 ```
 
-This runs `lint --fix`, `spec --check`, and `a11y audit`. All are free and exact.
-**A `spec --check` failure is a hard stop, not a finding** — the build is off-spec;
-fix it before critique is worth running. **Without `scripts/`**, run the same
-three `figma-cli` calls directly in that order — nothing in `gates.sh` beyond
-composing them.
+This runs a scoped lint, `spec --check`, `a11y audit`, and the font check — all four
+in ~7s, all free and exact. **A `spec --check` failure is a hard stop, not a finding**
+— the build is off-spec; fix it before critique is worth running.
+
+**Never gate with `figma-cli lint`.** It has no scoping flag and ignores the current
+selection, so it always walks the whole document: measured at 36–41s and then a
+`CDP timeout` on a 57,158-node file, and `lint --fix` at that scope would rewrite the
+entire design system to fix one frame. `scripts/lint-node.js` runs the same checks over
+one subtree in ~2s. **Without `scripts/`**, run `a11y audit <nodeId>` and
+`spec <component> --check <nodeId>` directly, and do the lint checks with an `eval`
+walk of the subtree — never substitute the whole-file `lint`.
 
 **An unresolved-variable warning from `render` is a build failure, not a
 cosmetic warning.** It is free to detect from the command's own output, so

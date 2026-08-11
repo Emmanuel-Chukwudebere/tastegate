@@ -159,6 +159,77 @@ figma-cli eval "(async () => { const n = await figma.getNodeByIdAsync('<id>'); \
   return n.findAll(x => x.name === 'Icon').map(x => x.name + ':' + x.children.length).join(' '); })();"
 ```
 
+## Speed: check the daemon, and never trust `status` for it
+
+**A stale daemon token costs 6.6× on every call, and nothing reports it.**
+`figma-cli status` prints `Connected to Figma` whenever CDP is reachable — it says
+nothing about whether the daemon's auth actually works. When the token is stale,
+every `eval`/`run` silently falls back to a cold Node spawn plus CDP handshake.
+
+Measured in one session: **20.1s per `eval` round-trip with a mismatched token, 3.0s
+after `daemon restart`.** The work itself was ~1s; the rest was process startup. Across
+~30 calls that is eight minutes of pure overhead, invisible in every command's output.
+
+```bash
+figma-cli daemon status     # the only command that reveals it
+figma-cli daemon restart    # regenerates the token
+```
+
+`daemon status` reports `auth failed (token mismatch)` in this state. Check it in
+preflight and after any `Unauthorized` error — and re-time a call to confirm the fix,
+since the error stops appearing before the speed comes back.
+
+## `lint` cannot be scoped, so it is unusable on a large file
+
+`figma-cli lint` has **no node argument and no scoping flag, and it ignores the current
+selection** — `figma-cli select <id>` then `lint` still walks the whole document.
+Measured against a 57,158-node design system: **36–41s, then `CDP timeout` and a
+non-zero exit.** It never completes, so it cannot gate anything there.
+
+Worse: **`lint --fix` at that scope rewrites the entire design system** to "fix" one
+new frame. Do not run it to gate a single build.
+
+Use `scripts/lint-node.js` instead — the same checks (unbound colors, off-scale
+spacing, empty icon frames, detached instances, AUTO line-height) over one subtree
+via the Plugin API, in ~2s with a healthy daemon.
+
+## `run` returns nothing when a file starts with `//` comments
+
+`figma-cli run <file>` **silently produces no output, no error, and exit 0** if the
+file carries leading `//` comment lines before the opening `(async () => {`.
+
+Verified by stripping an 11-line header from an otherwise byte-identical file: header
+present = empty output; header removed = correct output. The bodies diffed clean, so
+the header alone caused it.
+
+Put every comment **inside** the IIFE, as a `/* … */` block:
+
+```js
+(async () => {
+  /* rationale goes here, not above the IIFE */
+  …
+})();
+```
+
+This failure mode is especially dangerous in a gate: an empty result reads as "clean".
+
+## Generated scripts need a path both the shell and figma-cli can open
+
+On Git Bash, `mktemp` returns a POSIX path (`/tmp/foo.js`) that the shell resolves but
+`figma-cli` — a Windows Node process — cannot. And `cygpath -u "$TEMP"` returns `/tmp`
+while `cygpath -m /tmp` maps to `AppData\Local\Temp`: **two different directories**, so
+the shell writes one file and the CLI reads another that is not there. Empty output,
+exit 0, gate appears to pass.
+
+Pick the shell-side directory first, then convert that exact path:
+
+```bash
+SCRATCH_SH="${TMPDIR:-/tmp}"
+SCRATCH_WIN="$(cygpath -m "$SCRATCH_SH" 2>/dev/null || echo "$SCRATCH_SH")"
+printf '%s' "$script" > "$SCRATCH_SH/gen.js"
+figma-cli run "$SCRATCH_WIN/gen.js"
+```
+
 ## `verify` writes to `/tmp`, which is `C:\tmp` on Windows
 
 `figma-cli verify <nodeId>` saves to `/tmp/figma-verify-<id>.png`. Node resolves

@@ -1,7 +1,7 @@
 {
   "name": "claude-design",
   "description": "Design with taste: grounds UI work in your design system and references, self-checks output before showing it, and ships pixel-perfect code.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": {
     "name": "imman"
   },

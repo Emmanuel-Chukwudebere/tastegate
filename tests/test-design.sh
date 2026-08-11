@@ -22,8 +22,8 @@ has "$S" "when \`RUBRIC.md\`'s condition is met (the same dimension ≤ 2 twice)
 has "$S" "**If it does not exist, refuse** and direct the"
 # scripts/ must have a documented inline equivalent so README's "nothing
 # hard-depends on scripts/" claim is true under a single-skill install:
-has "$S" "(a single-skill install), run its checks directly: \`figma-cli --version\` and"
-has "$S" "**Without \`scripts/\`**, run the same"
+has "$S" "(a single-skill install), run its checks directly: \`figma-cli --version\`,"
+has "$S" "**Without \`scripts/\`**, run \`a11y audit <nodeId>\` and"
 # Real variable names must be resolved before writing var: references:
 has "$S" "Resolve real variable names with \`figma-cli var list\` before writing a \`var:\`"
 # Unresolved-variable warning is a build failure, not a cosmetic warning:
@@ -36,7 +36,9 @@ ordered "$S" "bash scripts/gates.sh <nodeId>" "Dispatch per \`RUNTIMES.md\` usin
 ordered "$S" "figma-cli spec \"<ComponentName>\"" "figma-cli render-batch"
 
 G=scripts/gates.sh
-has "$G" "if figma-cli lint --fix --json 2>/dev/null; then"
+# The old whole-file `lint --fix` must be GONE, not merely unused: at 57k nodes it
+# timed out, and --fix at that scope rewrites the whole design system.
+nothas "$G" "figma-cli lint --fix --json"
 has "$G" "if figma-cli spec \"\$COMPONENT\" --check \"\$NODE_ID\" --tolerance 2; then"
 
 Q=skills/design/qa-brief.md
@@ -87,6 +89,31 @@ has "$S" "**Pass the reference image alongside the build.**"
 # The reference must be handed over before the audit is dispatched, or there is
 # nothing to compare against.
 ordered "$S" "Pass the reference image alongside the build" "Cap the audit"
+
+
+
+
+# Gate scoping and daemon health, added after measuring the two biggest time sinks:
+# unscoped `lint` (36-41s then CDP timeout on a 57k-node file) and a stale daemon
+# token (20.1s per eval vs 3.0s, with `status` still reporting "Connected").
+# Anchors carry the numbers, since a doc that lost them would restore both costs.
+has "$S" "**Never gate with \`figma-cli lint\`.**"
+has "$S" "**\`figma-cli daemon status\`**"
+has "$S" "cost ~20s instead of ~3s, and \`status\` reports \`Connected\` anyway"
+G=scripts/gates.sh
+has "$G" "figma-cli lint\` is deliberately not used"
+has "$G" "do NOT substitute whole-file lint"
+# The gate must fail loudly on an unbound color, not merely print it.
+has "$G" "GATE: lint found errors"
+# The font gate must treat Inter as a violation, not a note.
+has "$G" "GATE: font VIOLATION"
+L=scripts/lint-node.js
+# Comments must live inside the IIFE — `run` returns nothing with a leading // header.
+has "$L" "silently returns nothing"
+has "$L" "leading \`//\` comments before the opening"
+P=scripts/preflight.sh
+has "$P" "PREFLIGHT: figma-daemon AUTH FAILED"
+has "$P" "figma-cli daemon restart"
 
 echo "PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ]

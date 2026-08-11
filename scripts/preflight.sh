@@ -18,6 +18,29 @@ else
   HARD_FAIL=1
 fi
 
+# The daemon is a HARD dependency for speed, and its failure mode is silent.
+# `figma-cli status` prints "Connected to Figma" whenever CDP is reachable, even
+# when the daemon's auth token is stale — every `eval`/`run` then falls back to a
+# cold Node spawn plus CDP handshake. Measured on a real session: 20.1s per call
+# with a mismatched token, 3.0s after `daemon restart`. A 6.6x tax on every call,
+# invisible in `status` output and invisible in command results.
+DAEMON_STATUS="$(figma-cli daemon status 2>&1 || true)"
+case "$DAEMON_STATUS" in
+  *"is running"*)
+    echo "PREFLIGHT: figma-daemon OK"
+    ;;
+  *"token mismatch"*|*"auth failed"*)
+    echo "PREFLIGHT: figma-daemon AUTH FAILED - every eval/run costs ~20s instead of ~3s."
+    echo "PREFLIGHT: figma-daemon fix with: figma-cli daemon restart"
+    HARD_FAIL=1
+    ;;
+  *)
+    echo "PREFLIGHT: figma-daemon NOT RUNNING - render, set-batch, and eval will fail."
+    echo "PREFLIGHT: figma-daemon fix with: figma-cli daemon start"
+    HARD_FAIL=1
+    ;;
+esac
+
 if [ -d "$HOME/.claude/skills/emil-design-eng" ] || [ -d "$HOME/.agents/skills/emil-design-eng" ]; then
   echo "PREFLIGHT: emil-skills OK"
 else
