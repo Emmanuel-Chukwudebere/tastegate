@@ -55,9 +55,20 @@ claude --plugin-dir /path/to/claude-design
 Then `/reload-plugins` after edits.
 
 Under the plugin, skills are namespaced (`/claude-design:taste`). Under
-`npx skills add`, they install unnamespaced (`/taste`). Both work; the plugin also
-brings `scripts/`, though every script has an inline equivalent documented in the
-skill that uses it, so nothing depends on them.
+`npx skills add`, they install unnamespaced (`/taste`). Both work.
+
+The plugin also brings `scripts/`. `preflight.sh` and `gates.sh` only compose
+`figma-cli` calls, and each skill documents that sequence inline — so a single-skill
+install degrades cleanly. Two scripts have **no inline equivalent**, because the
+commands they replace are broken rather than merely absent:
+
+- **`lint-node.js`** — `figma-cli lint` cannot be scoped and times out on a large
+  file. Never substitute it; see the Speed section.
+- **`dtcg-to-css.js`** — `figma-cli export css` emits `#NaNNaNNaN` for aliased
+  tokens.
+
+Without `scripts/`, those two checks do not run, and the skill says so rather than
+implying they passed.
 
 ## Updating
 
@@ -71,14 +82,34 @@ npx skills@latest update            # all installed skills
 npx skills@latest update design     # or one by name
 ```
 
-**Plugin:**
+**Plugin:** both commands, in this order, and the plugin name **must carry its
+marketplace suffix**:
 
 ```bash
-claude plugin marketplace update emmanuel-chukwudebere
-claude plugin update claude-design
+claude plugin marketplace update emmanuel-chukwudebere      # fetches the repo
+claude plugin update claude-design@emmanuel-chukwudebere    # installs the new version
 ```
 
-Then `/reload-plugins`, or restart the session.
+Then restart the session.
+
+Three traps here, each of which silently leaves you on the old version:
+
+- **`/reload-plugins` does not fetch.** It re-reads what is already on disk. The
+  marketplace clone lives at
+  `~/.claude/plugins/marketplaces/<name>/` and only moves when you run
+  `marketplace update` — so reloading against a three-day-old clone reports the old
+  version forever, with no error.
+- **The bare name fails.** `claude plugin update claude-design` exits with
+  `Plugin "claude-design" not found`. The installed key is
+  `claude-design@emmanuel-chukwudebere`; use it.
+- **Skipping the marketplace step is a silent no-op.** `plugin update` compares
+  against the local clone, so without the fetch it correctly finds nothing to do.
+
+To confirm which version is actually live:
+
+```bash
+ls ~/.claude/plugins/cache/emmanuel-chukwudebere/claude-design/
+```
 
 **If you publish changes, bump `version` in `.claude-plugin/plugin.json`.** Users
 only receive plugin updates when that field changes; leave it alone and
@@ -124,11 +155,39 @@ So a fintech dashboard and a children's app never share a profile.
 
 ## Why it costs less
 
-Deterministic work runs as tool calls, not token generation: `figma-cli lint --fix`
-and `spec --check` gate the build before any model critique; `export css` and
-`export-jsx` emit tokens and structure exactly and free. The QA pass runs in a
-sub-agent, so screenshots never enter the main context. And three upfront
-explorations replace the long correction thread.
+Deterministic work runs as tool calls, not token generation. `scripts/gates.sh`
+checks lint, spec, accessibility, font bindings, and a non-blank export in ~7s
+before any model critique — a model hunting what a gate finds free is the single
+most expensive mistake in this pipeline. The QA pass runs in a sub-agent with a
+tool-call budget and the reference image, so screenshots never enter the main
+context. Three upfront explorations replace the long correction thread.
+
+Measured savings from one live build: a blocking, reference-less audit of three
+frames took 195 tool calls and 144 minutes; the same work overlapped, gated, and
+handed the reference took 11 calls and 6.6 minutes.
+
+## Speed
+
+Three costs dominate, all of them silent. Each is now checked rather than assumed:
+
+| Cost | Measured | Fix |
+|---|---|---|
+| Stale daemon token | **20.1s** per `eval`, vs 3.0s healthy | hard preflight check — `figma-cli status` still prints "Connected" |
+| Unscoped `figma-cli lint` | **36–41s, then CDP timeout** on 57k nodes | `scripts/lint-node.js`, one subtree, ~2s |
+| `export-jsx` | **timed out at 120s** | daemon-side tree dump, ~3s |
+
+The daemon one is the trap: nothing reports it, so a whole session can run at 6.6×
+cost with no error anywhere. Check `figma-cli daemon status`, and after a restart
+re-time a call — the error message stops before the speed comes back.
+
+Two more that exit 0 and look like success: `figma-cli run` returns **nothing** when
+a script has leading `//` comments before the IIFE, and a node with `visible = false`
+exports a **149-byte transparent PNG** with a `✓ Exported` message. Both are gated;
+`skills/design/FIGMA-CLI.md` has the evidence.
+
+`figma-cli export css` cannot resolve variable aliases and emits `#NaNNaNNaN` for
+every semantic token. Use `export dtcg` plus `scripts/dtcg-to-css.js`, which
+converts each alias to a `var()` reference so theming survives into CSS.
 
 ## Runtimes
 

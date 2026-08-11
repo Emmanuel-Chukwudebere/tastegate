@@ -123,5 +123,13 @@ has "$G" "check node.visible via"
 # Reused DS instances carry their own type — a "no Inter" check passes right over it.
 has "$G" "GATE: font MIXED"
 
+# `export css` cannot resolve variable aliases and emits #NaNNaNNaN for every semantic
+# token (verified across all 21 in a real file). dtcg-to-css.js exists because of that;
+# the reason must survive or someone will "simplify" back to the broken command.
+D=scripts/dtcg-to-css.js
+has "$D" "for every semantic token"
+has "$D" "so the indirection survives into CSS and a theme"
+has "$D" "is NOT a substitute"
+
 echo "PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ]
