@@ -42,8 +42,13 @@ has "$E" "\`var:\` reference in JSX must use the slash form, not the CSS one."
 
 T=skills/ship/states.md
 has "$T" "| Hover | **gated**: \`@media (hover: hover) and (pointer: fine)\` — touch fires false hovers, leaving sticky states |"
-has "$T" "| Focus-visible | a visible ring; never remove the outline without replacing it |"
-has "$T" "| Disabled | reduced contrast plus \`cursor: not-allowed\`; must still meet contrast minimums for readable text |"
+# Focus and disabled carry NUMERIC thresholds, not "adequate contrast" prose: Figma
+# supplies neither state, so a vague rule here is what ships an invisible focus ring
+# or an unreadable disabled label. The ring needs 3:1 against BOTH neighbours (a ring
+# that only clears the component vanishes against the page), and "disabled" is not
+# permission to drop the label below AA.
+has "$T" "| Focus-visible | a visible ring; never remove the outline without replacing it. The ring needs ≥ 3:1 against **both** the component and the page behind it |"
+has "$T" "| Disabled | reduced contrast plus \`cursor: not-allowed\`; text still ≥ 4.5:1. \"Disabled\" is not permission to make it unreadable — dim the background, not the label |"
 has "$T" "| Loading | a skeleton or spinner; reserve the final layout's space so nothing shifts on arrival |"
 has "$T" "| Empty | an invitation to act, not an apology. Say what to do next |"
 has "$T" "| Error | what went wrong and how to fix it, in the interface's voice. Never vague, never apologetic |"

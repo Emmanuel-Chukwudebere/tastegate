@@ -71,5 +71,13 @@ adversarial by design: approval is earned.
 Order findings by severity. Each carries evidence and an exact fix. Close with a
 prioritized implementation plan the user or another agent can execute.
 
+**Where `TASTE.md` itself is the cause of a threshold failure**, report it per
+`design/CONFLICT.md` — measured value, threshold crossed, smallest brand-preserving
+fix — rather than either passing it because it was specified or presenting a redesign.
+Skip anything under `## Accepted exceptions` in `TASTE.md`: list it once as an
+accepted exception with its date, never as a new finding. And hold the line on the
+other side too — a design that diverges from convention because the profile says so
+is not a finding at all.
+
 Never apply fixes from this skill. If the user wants them applied, that is
 `/claude-design:design` or `/claude-design:ship`.

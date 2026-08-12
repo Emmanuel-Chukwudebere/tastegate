@@ -71,8 +71,18 @@ else
   echo "GATE: spec --check skipped (no component given)"
 fi
 
+# Contrast and target size are thresholds, not preferences: WCAG AA (4.5:1 body,
+# 3:1 large text and UI components) and WCAG 2.5.8 (24x24 minimum). A failure here
+# is reported as a CONFLICT per skills/design/CONFLICT.md when TASTE.md itself is
+# the cause — the user decides — so this gate surfaces it rather than exiting 1 and
+# stalling a build over a brand color the user has already accepted.
 echo "GATE: a11y audit (scoped to $NODE_ID)"
-figma-cli a11y audit "$NODE_ID" 2>/dev/null || echo "GATE: a11y audit produced findings"
+A11Y_OUT="$(figma-cli a11y audit "$NODE_ID" 2>&1)"
+echo "$A11Y_OUT"
+if echo "$A11Y_OUT" | grep -qiE "fail|below|insufficient|too small"; then
+  echo "GATE: a11y FINDINGS - if TASTE.md is the cause, raise a CONFLICT (measured value,"
+  echo "GATE: a11y threshold, smallest brand-preserving fix) rather than silently shipping or overriding."
+fi
 
 # Fonts: a family that never binds stays Inter, and `render` exits 0 either way.
 # Free to detect here; expensive to have a model notice later.

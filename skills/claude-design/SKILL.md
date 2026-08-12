@@ -36,6 +36,13 @@ Yes → read it. If the request contradicts it (a light hero when the profile is
 dark-only), surface the conflict before building — the profile is not automatically
 right, but the divergence must be deliberate.
 
+Two kinds of conflict, handled differently. **Request vs. profile** is the one above:
+name the divergence and confirm which wins. **Profile vs. usability** — where
+`TASTE.md` itself crosses a measurable threshold — is `design/CONFLICT.md`: raise the
+measured value, the threshold, and the smallest brand-preserving fix, then let the
+user decide. Neither is a licence to override the profile on taste. If you cannot
+name a threshold and a number, the profile wins.
+
 **2. Is the direction settled?**
 
 A reference image, a URL, or an explicit description settles it → skip `explore`.
@@ -94,6 +101,11 @@ The pipeline's cost is dominated by round-trips, not by generation. Three rules:
 3. **Stop at the tolerance.** ±8pt position, ±3pt cap-height is converged. A
    measurement always returns something; without a stated band the loop never ends.
    One hero spent ~20 measure-adjust-export rounds closing invisible deltas.
+4. **Compare ink to ink, never box to box.** Figma `node.y` and CSS
+   `getBoundingClientRect().top` are different reference lines, so part of that
+   ~20-round chase was an artifact no correction could close. See
+   `design/TEXT-GEOMETRY.md` — and prevent it by setting an explicit pixel
+   line-height on both sides.
 
 ## Reporting
 

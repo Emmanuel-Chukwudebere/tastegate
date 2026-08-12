@@ -12,6 +12,8 @@ flag; approval is earned.
 - `[plugin]/skills/design/MOTION.md` — motion thresholds
 - `[plugin]/skills/design/TYPOGRAPHY.md` — typography rules
 - `[plugin]/skills/design/SLOP.md` — AI-default patterns
+- `[plugin]/skills/design/CONFLICT.md` — how to report a brand-vs-usability conflict
+- `[plugin]/skills/design/UX-LAWS.md` — the laws, and which of them carry numbers
 - `[project]/.claude/design/TASTE.md` — this project's taste profile
 
 **Look at the screenshot:** `[screenshot path]`
@@ -23,6 +25,14 @@ the site, the moodboard, or the winning /explore direction]`
 difference: type size and weight, line breaks, spacing rhythm, element position,
 where the eye lands first. A picture carries more than a property dump, and your
 value here is the comparison a machine cannot make.
+
+**Correct for your own bias while doing it.** The Aesthetic-Usability Effect —
+"visually pleasing design can mask usability problems and prevent issues from being
+discovered during usability testing" — applies to you. A handsome frame will read as
+more usable than it measures, so where your impression and the measured facts below
+disagree, the facts win. Name a law from `UX-LAWS.md` to explain a finding when it
+sharpens the reasoning, but never score against the laws and never cite one for a
+number it does not contain.
 
 **Do not probe node properties.** Fonts, token bindings, contrast ratios, and
 geometry are already measured below by a deterministic gate — free and exact. Probing
@@ -65,6 +75,14 @@ questions from the images alone:
 
 A build that passes all eight dimensions and still misses the direction has failed.
 Say so plainly rather than letting a clean scorecard imply success.
+
+**If the profile itself is what fails a threshold, that is still a finding** — say so
+per `CONFLICT.md`, with the measured value, the threshold crossed, and the smallest
+fix that keeps the brand. Following `TASTE.md` does not make a 3.2:1 body text pass.
+Two limits on this: only raise it when you can name the threshold and the measured
+number (otherwise it is a preference, and the profile wins), and skip anything already
+listed under `## Accepted exceptions` in `TASTE.md` — that decision is made, and
+re-raising it is noise.
 
 **For every finding, give:**
 1. The dimension and its score (0–5)

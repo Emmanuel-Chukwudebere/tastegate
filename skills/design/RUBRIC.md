@@ -8,7 +8,16 @@ observed, where), and an exact fix (the precise value or change, never "improve
 the spacing").
 
 Write findings as full prose with reasoning. A terse list is not acceptable —
-the reasoning is what makes a finding actionable.
+the reasoning is what makes a finding actionable. `UX-LAWS.md` is the vocabulary for
+that reasoning — naming the Law of Proximity for a grouping defect makes a finding
+concrete rather than stylistic. It is a vocabulary, not a ninth dimension: never score
+against the laws, and never cite one for a number it does not contain.
+
+**Looking is biased, which is why the gate runs first.** The Aesthetic-Usability Effect
+holds that "visually pleasing design can mask usability problems and prevent issues
+from being discovered during usability testing" — and that applies to you reading this
+screenshot, not only to end users. An attractive frame will read as more usable than it
+measures. Trust `gates.sh` output over your impression wherever they disagree.
 
 ## Dimensions
 
@@ -31,12 +40,30 @@ respected, easing correct for interaction type, no `ease-in` on UI, under 300ms,
 no `scale(0)`, `transform`/`opacity` only, `transform-origin` from trigger,
 reduced-motion handled, hover gated.
 
-**6. Accessibility** — contrast ratios pass, touch targets ≥ 24×24 (44×44
-preferred), reduced motion respected, focus visible, reading order sensible.
-Cross-check with `figma-cli a11y audit`.
+**6. Accessibility** — contrast ratios pass (WCAG AA: 4.5:1 body, 3:1 large text and
+UI components), touch targets ≥ 24×24 (**WCAG 2.5.8**; 44×44 per Apple HIG preferred),
+system feedback within 400ms (**Doherty Threshold**), reduced motion respected, focus
+visible, reading order sensible. Cross-check with `figma-cli a11y audit`.
+
+Every number here comes from WCAG, platform guidance, or a quantified law — see
+`UX-LAWS.md` for which is which. **Cite the source that actually carries the number.**
+Fitts's Law explains *why* target size matters but specifies no value; attributing
+24×24 to it is a fabricated citation.
+
+**Score this against the threshold, not against `TASTE.md`.** When the profile
+itself is what fails — a brand grey at 3.2:1 — that is still a finding here, and
+`CONFLICT.md` governs how it reaches the user: measured value, threshold, smallest
+brand-preserving fix, user decides. Do not mark it passed because it was specified,
+and do not silently override it. **Exception:** anything listed under
+`## Accepted exceptions` in `TASTE.md` has already been decided — report it once as
+an accepted exception with its date, never as a new finding.
 
 **7. Slop** — see `SLOP.md`. Does this land on a known AI default? If the brief
 did not ask for it, that is an automatic finding.
+
+The inverse is not a finding. A design that diverges from your defaults **because
+`TASTE.md` says so** is grounding working correctly — score it against the profile,
+never against convention.
 
 **8. Breakpoint behaviour** — does the design hold at the widths recorded in
 `TASTE.md`? What stacks, what hides, where do columns collapse? Untested

@@ -50,6 +50,17 @@ Review the plan against `SLOP.md` before building. If any part reads as the
 generic default you would produce for any similar brief, revise it and say what
 you changed and why.
 
+**Then check the profile against usability thresholds — see `CONFLICT.md`.** Where
+`TASTE.md` requires something that crosses a measurable line (contrast below WCAG
+AA, targets under 24×24, transitions over 300ms, motion with no reduced-motion
+path), raise it now with the measured value, the threshold, and the smallest fix
+that holds the brand — then let the user decide. Batch every conflict into one
+message before building, never one interrupt per finding.
+
+**Only measurable conflicts.** If you cannot name the threshold and the measured
+value, it is a preference, not a finding — and the profile wins. A brand that looks
+unlike your defaults is the point of grounding, not a defect to correct.
+
 ### 3. Reuse before building
 For every element, check the registry first:
 

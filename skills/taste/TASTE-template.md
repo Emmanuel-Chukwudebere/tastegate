@@ -60,3 +60,13 @@ The one thing this design is remembered by.
 Enforced constraints, recorded verbatim from the user.
 
 -
+
+## Accepted exceptions
+
+Conflicts between this profile and a usability threshold that the user chose to
+ship as specified. Each carries the measured value, the threshold, the date, and
+the reason. **Never re-raise an entry here** — see `design/CONFLICT.md`.
+
+Empty until a conflict is decided.
+
+-

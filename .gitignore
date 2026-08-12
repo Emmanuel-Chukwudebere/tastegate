@@ -1,4 +1,5 @@
 .superpowers/
+.playwright-mcp/
 node_modules/
 *.log
 DESIGN-structure/

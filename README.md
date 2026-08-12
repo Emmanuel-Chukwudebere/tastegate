@@ -140,6 +140,33 @@ know which one you want.
 Every stage refuses or warns without a taste profile, by design — grounding is the
 whole thesis.
 
+## When the brand fights good UX
+
+The profile wins aesthetic disagreements — a brand that looks unlike an AI default is
+the point, and `SLOP.md` exists because the generic default is the failure mode. But
+where `TASTE.md` crosses a **measurable** threshold, the pipeline pushes back instead of
+shipping silently: it names the measured value, the threshold, and the smallest fix that
+holds the brand, then lets you decide.
+
+```
+CONFLICT: TASTE.md sets body text #8A8A8E on #F4F1EA — 3.2:1, WCAG AA needs 4.5:1.
+WHY IT MATTERS: fails for low-vision users and in sunlight; it is body copy, so every screen.
+SMALLEST FIX: #5F5F63 — 4.6:1, same hue family, same perceived warmth.
+YOUR CALL: [1] apply  [2] ship as specified, recorded as an exception  [3] apply here only
+```
+
+Choose [2] and it is recorded under `## Accepted exceptions` in your profile and
+**never raised again**. The line is drawn at measurability: `skills/design/CONFLICT.md`
+governs the mechanism, and `skills/design/UX-LAWS.md` sorts the 30
+[Laws of UX](https://lawsofux.com/) into the few that carry numbers and the many that
+do not. If a finding cannot name a threshold and a measured value, it is a preference —
+and the profile wins. Citing Fitts's Law for a pixel value it never specifies is a
+fabricated citation; Miller's Law warns against precisely that misuse.
+
+Unattended runs follow the profile and report the conflict rather than redesigning your
+brand. The single exception is content no one can perceive — text at or below 1.5:1, a
+control with no focus path — which is fixed and loudly reported.
+
 ## How taste is stored
 
 Universal craft standards ship inside the skills that use them. Your taste is
@@ -152,6 +179,23 @@ per-project, generated into the consuming project:
 ```
 
 So a fintech dashboard and a children's app never share a profile.
+
+## Standards
+
+Universal craft rules, versioned with the plugin and read by the stage that needs them:
+
+| File | Governs |
+|---|---|
+| `design/RUBRIC.md` | the 8 scored dimensions, and the escalation rule |
+| `design/SLOP.md` | known AI defaults, as automatic findings |
+| `design/MOTION.md` | frequency tiers, easing, duration ceilings |
+| `design/TYPOGRAPHY.md` | measure, figures, tracking, fallback stacks |
+| `design/CONFLICT.md` | brand vs. usability — when to push back, and how |
+| `design/UX-LAWS.md` | the 30 Laws of UX, split by which carry numbers |
+| `design/TEXT-GEOMETRY.md` | why Figma and CSS disagree vertically, and the fix |
+| `design/FIGMA-CLI.md` | the JSX dialect, and every silent-failure mode found |
+| `ship/states.md` | the 8 interaction states Figma does not contain |
+| `ship/FRAMEWORKS.md` | per-framework emit rules |
 
 ## Why it costs less
 
@@ -188,6 +232,17 @@ exports a **149-byte transparent PNG** with a `✓ Exported` message. Both are g
 `figma-cli export css` cannot resolve variable aliases and emits `#NaNNaNNaN` for
 every semantic token. Use `export dtcg` plus `scripts/dtcg-to-css.js`, which
 converts each alias to a `var()` reference so theming survives into CSS.
+
+The most expensive failure measured here was not a slow command — it was an
+**unclosable comparison**. A Figma-to-CSS pixel diff that compares `node.y` against
+`getBoundingClientRect().top` is comparing two different reference lines: Figma AUTO and
+CSS `line-height` compute different box heights (−12px to +9px at 105pt, depending on the
+CSS form), and CSS adds half-leading that Figma has none of (11px at 105pt). Both scale
+with font size and accumulate down a flex column, so the drift can flip sign partway and
+no constant offset corrects it. One build spent ~20 measure-adjust rounds on it.
+`skills/design/TEXT-GEOMETRY.md` carries the measurements and the fix: compare ink to
+ink, and set an explicit pixel line-height on both sides so the boxes match by
+construction. `lint-node.js` now flags AUTO line-height for this reason.
 
 ## Runtimes
 

@@ -88,7 +88,29 @@ the frame screenshot:
   `figma-cli verify <nodeId>`.
 - Findings are geometric: spacing deltas, type-size mismatches, color drift.
 
-Correct and re-verify, maximum 3 passes, then report residual deltas.
+**Read `design/TEXT-GEOMETRY.md` before diffing vertical positions.** Figma's
+`node.y` and CSS's `getBoundingClientRect().top` are different reference lines:
+Figma AUTO line-height and CSS `line-height` compute different box heights (measured
+−12px to +9px at 105pt, depending on which CSS form), and CSS adds half-leading that
+Figma has none of (11px at 105pt from line-height alone). Both errors are per-node
+and scale with font size, so they **accumulate down a flex column and can flip sign
+partway**, which no constant offset can correct. Compare **ink to ink** — cap-top to
+cap-top — never box to box. Best is to prevent it: set an explicit pixel
+line-height on both sides so the boxes match by construction.
+
+**Converged means stop: ±8pt position, ±3pt cap-height** — the same band `design`
+uses. Inside it, record the residual and move on. A measurement always returns a
+non-zero delta, so without a stated tolerance every comparison reads as actionable
+and the loop never ends; one hero spent ~20 measure-adjust rounds closing deltas
+from 30pt to 5pt, long past visibility.
+
+**At most 2 correction rounds between diffs**, maximum 3 diff passes. Then report
+residual deltas.
+
+**A delta that will not close after one correction is a signal to re-read the
+comparison, not to correct harder.** Unclosable deltas are usually the reference-line
+artifact above. Check whether the delta accumulates with depth or scales with font
+size before adjusting geometry a second time.
 
 **If the diff cannot run** (no dev server, Playwright unavailable): emit the code,
 then state plainly that visual verification **did not run**. Never imply measured

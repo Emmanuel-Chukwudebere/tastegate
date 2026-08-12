@@ -22,13 +22,30 @@ OUT_NO_CLI="$(PATH="$TMPDIR_STUB:/usr/bin:/bin" bash scripts/preflight.sh 2>&1)"
 RC_NO_CLI=$?
 check "exits non-zero when figma-cli absent" '[ "$RC_NO_CLI" -ne 0 ]'
 
-# Test exit code: preflight should match environment state for hard dependencies
-# If figma-cli status succeeds, exit should be 0; if it fails, exit should be non-zero
-if figma-cli status >/dev/null 2>&1; then
+# Exit code must match the state of EVERY hard dependency, and there are two:
+# reachability (`status`) and daemon health. Predicting the exit code from `status`
+# alone is the same mistake the daemon gotcha exists to document -- `status` prints
+# "Connected to Figma" whenever CDP is reachable and says nothing about the daemon,
+# so it exits 0 while preflight correctly exits 1 on a dead or stale-token daemon.
+# Observed live: status rc=0, daemon "not running", preflight rc=1 -- all correct.
+check "reports daemon check" 'grep -q "PREFLIGHT: figma-daemon" <<<"$OUT"'
+
+DAEMON_OK=1
+case "$(figma-cli daemon status 2>&1 || true)" in *"is running"*) DAEMON_OK=0 ;; esac
+
+if figma-cli status >/dev/null 2>&1 && [ "$DAEMON_OK" -eq 0 ]; then
   check "exits 0 when hard deps satisfied" '[ "$RC" -eq 0 ]'
 else
-  check "exits non-zero when hard deps missing" '[ "$RC" -ne 0 ]'
+  check "exits non-zero when a hard dep is missing" '[ "$RC" -ne 0 ]'
 fi
+
+# The daemon must be a HARD failure, not a warning: a stale token costs ~20s per
+# eval/run versus ~3s, invisibly. Verify the polarity from the script itself, so a
+# regression to a soft warning fails here even on a machine with a healthy daemon.
+check "daemon failure sets HARD_FAIL" \
+  'grep -A3 "token mismatch" scripts/preflight.sh | grep -q "HARD_FAIL=1"'
+check "absent daemon sets HARD_FAIL" \
+  'grep -A3 "NOT RUNNING" scripts/preflight.sh | grep -q "HARD_FAIL=1"'
 
 echo "PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ]

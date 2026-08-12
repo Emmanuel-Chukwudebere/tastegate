@@ -71,9 +71,22 @@
       add("WARN", n, "named like a registry component but is a FRAME, not an INSTANCE");
     }
 
-    // 5. Text nodes with no explicit line-height.
-    if (n.type === "TEXT" && n.lineHeight && n.lineHeight.unit === "AUTO" && n.fontSize >= 20) {
-      add("WARN", n, "display text at " + n.fontSize + "pt uses AUTO line-height");
+    // 5. AUTO line-height makes a Figma->CSS vertical diff unclosable.
+    // Figma's AUTO box is fontAscent+fontDescent; CSS computes a different height
+    // (measured -12px at line-height:1 and +9px at 1.2, both at 105pt) and adds
+    // half-leading that Figma has none of (11px at 105pt). Both errors scale with
+    // font size and accumulate down a flex column, so no constant offset corrects
+    // them. An explicit PIXELS line-height makes both boxes identical by
+    // construction. See skills/design/TEXT-GEOMETRY.md.
+    // Text inside a component INSTANCE belongs to that component, not to this build,
+    // so blocking on it would fail a build over a design-system node the builder
+    // cannot fix here. Report it, do not block it.
+    if (n.type === "TEXT" && n.lineHeight && n.lineHeight.unit === "AUTO") {
+      let inInstance = false;
+      for (let p = n.parent; p; p = p.parent) if (p.type === "INSTANCE") { inInstance = true; break; }
+      const sev = n.fontSize >= 20 && !inInstance ? "ERROR" : "WARN";
+      add(sev, n, "AUTO line-height at " + n.fontSize + "pt" + (inInstance ? " (inside an instance)" : "") +
+        " — set PIXELS, or the code diff cannot close");
     }
   }
 
