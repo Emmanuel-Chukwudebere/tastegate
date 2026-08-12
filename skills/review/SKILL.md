@@ -56,12 +56,33 @@ default widths 390 / 834 / 1440 rather than failing or silently skipping the
 breakpoint dimension.**
 
 ### 3. Score
-Dispatch a sub-agent (model **sonnet**) with the brief in
-`design/qa-brief.md`, scoring all 8 dimensions from
-`design/RUBRIC.md`.
+Dispatch a sub-agent (model **sonnet**) per `design/RUNTIMES.md`, with the brief in
+`design/qa-brief.md`, scoring all 8 dimensions from `design/RUBRIC.md`.
 
 Escalate that pass to **opus** when the same dimension scores ≤ 2 on two
 consecutive passes, and say that you escalated and why.
+
+The brief carries four things, and the pass degrades badly without them:
+
+1. **The step-1 output as established fact.** `lint`, `a11y audit`, and cluster
+   findings are already measured — free and exact. An audit told to score eight
+   dimensions with no facts goes measuring instead of judging: one such pass spent
+   **195 tool calls** re-deriving what the gate had handed it.
+2. **A tool-call budget**, with instructions to report what it has when spent. An
+   uncapped audit surfaces ever-smaller findings until it exhausts its context.
+3. **The reference**, where one exists — the site capture, moodboard, or the
+   `TASTE.md` direction. Without it the pass can only check rules; with it, it can
+   say the work missed the direction, which is the finding that matters most.
+4. **`## Accepted exceptions` from `TASTE.md`**, so a settled decision is not
+   re-litigated as a fresh finding.
+
+**Dispatch one sub-agent per breakpoint, all in a single message**, so the widths audit
+concurrently rather than in sequence. Screenshots load in each sub-agent; **never read
+them into this context** — that is the cost mechanism, and a three-breakpoint blocking
+audit measured 144 minutes against a fraction of that overlapped.
+
+**Without sub-agent support**, run the pass inline and say so once. The rubric produces
+the quality; isolation produces the cost saving.
 
 ### 4. Motion specifically
 Invoke `review-animations` on the code diff or implementation. Its posture is

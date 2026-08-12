@@ -66,6 +66,9 @@ commands they replace are broken rather than merely absent:
   file. Never substitute it; see the Speed section.
 - **`dtcg-to-css.js`** — `figma-cli export css` emits `#NaNNaNNaN` for aliased
   tokens.
+- **`extract-image.js`** — `export node` rasterises an image fill as composited
+  (4.07MB with the scrims baked in, versus the 766KB original on one measured hero),
+  so there is no command that returns the source asset.
 
 Without `scripts/`, those two checks do not run, and the skill says so rather than
 implying they passed.
@@ -136,6 +139,14 @@ The router decides which stages a request needs — it runs `taste` when no prof
 exists, `explore` when the direction is unsettled, and `design` before `ship` so the
 code has a gated frame to measure against. Call a stage directly when you already
 know which one you want.
+
+**Every audit is a dispatched sub-agent, never an inline pass** — `design` step 6,
+`ship` step 4 (per component, as it lands) and step 8, `review` step 3, and one agent
+per direction in `explore`. Two reasons, and the second matters more: screenshots stay
+out of the main context, and a fresh context reviews code the way a reader will instead
+of re-reading the reasoning that produced it. Each gets a tool-call budget and the
+gate's findings as established fact. Where a runtime has no sub-agents, the pass runs
+inline and says so — see `skills/design/RUNTIMES.md`.
 
 Every stage refuses or warns without a taste profile, by design — grounding is the
 whole thesis.

@@ -97,7 +97,13 @@ The pipeline's cost is dominated by round-trips, not by generation. Three rules:
 1. **Gate before critique.** Deterministic checks are free and exact; a model hunting
    what `lint` finds is neither. `scripts/gates.sh <nodeId>` runs all four in ~7s.
 2. **Overlap the audit.** Dispatch QA in the background and keep building. Wall-clock
-   becomes the slowest single audit, not the sum.
+   becomes the slowest single audit, not the sum. Every audit in this pipeline is a
+   **dispatched sub-agent**, never an inline pass: `design` step 6, `ship` step 4 (per
+   component, as it lands) and step 8, `review` step 3, and one agent per direction in
+   `explore`. Two reasons, and the second matters more — screenshots stay out of this
+   context, and a fresh context reviews code the way a reader will, rather than
+   re-reading the reasoning that produced it. Give every one a tool-call budget and the
+   gate's findings as established fact.
 3. **Stop at the tolerance.** ±8pt position, ±3pt cap-height is converged. A
    measurement always returns something; without a stated band the loop never ends.
    One hero spent ~20 measure-adjust-export rounds closing invisible deltas.

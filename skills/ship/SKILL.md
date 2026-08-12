@@ -67,6 +67,30 @@ Generate every interaction state — see `states.md`. A Figma frame
 contains almost none of them, and their absence is what makes converted code feel
 unfinished.
 
+**Dispatch a review as each component lands, not once at the end.** Step 8 audits the
+whole result; that is too late to be cheap. A defect found while the component is the
+thing you are working on costs an edit — the same defect found after three more
+components depend on it costs a refactor.
+
+Send one **background** sub-agent per component as you finish it (model **sonnet**),
+and keep emitting while it runs. Wall-clock stays the slowest single review rather than
+their sum, and the findings arrive while the context is still warm. What it checks —
+things a pixel diff cannot see:
+
+- **placeholders that render fine**: a stand-in image URL, lorem copy, a `#TODO` href,
+  a hardcoded value where a token belongs. These survive every visual check because
+  they *look* correct. One shipped hero kept a stand-in Unsplash URL past a full
+  fidelity pass for exactly this reason.
+- **states that exist in `states.md` and not in the code**
+- **a second styling paradigm** entering a project that already has one
+- **tokens retyped rather than referenced**
+
+Two rules keep this from becoming the 195-call audit: give each one a **tool-call
+budget**, and tell it **not to re-derive** what the export already established.
+
+**On a single-component job, skip this** and let step 8 do the work — one component
+does not need an incremental pass on top of a final one.
+
 ### 5. `animate`
 Invoke it to author each animation warranted by step 1, with correct curve,
 duration, property, interruption, and exit. Values from `design/MOTION.md`.
@@ -116,9 +140,28 @@ size before adjusting geometry a second time.
 then state plainly that visual verification **did not run**. Never imply measured
 fidelity that was not measured.
 
-### 8. Round-trip check
-Run `design/RUBRIC.md` against the built result, so code is held to the
-standard the design was held to.
+### 8. Round-trip check — dispatch a sub-agent
+Dispatch per `design/RUNTIMES.md` with `design/qa-brief.md` as the brief, scoring all
+eight `design/RUBRIC.md` dimensions against the built result — so code is held to the
+standard the design was held to. Model: **sonnet**; escalate to **opus** on the same
+condition (one dimension ≤ 2 on two consecutive passes).
+
+**Dispatch it, do not run it inline.** Reviewing your own emitted code in the context
+that wrote it is the weakest possible audit: the reasoning that produced a defect is
+still resident and reads as justification. A fresh context sees the code as a reader
+does. It is also the cheap path — the diff screenshots and standards load in the
+sub-agent, and only findings come back.
+
+The brief needs three things this stage has and `design` does not:
+
+- **the emitted file paths**, so the audit reads code and not only pixels
+- **the residual deltas from step 7**, with the tolerance band — otherwise it
+  re-reports a converged 5pt gap as a finding
+- **the states from `states.md`**, since a screenshot shows one state and the other
+  seven are exactly where converted code fails
+
+**Without sub-agent support**, run it inline and say so — the rubric supplies the
+quality, isolation supplies the cost saving and the fresh eyes.
 
 ## Token round trip
 

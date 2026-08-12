@@ -248,6 +248,68 @@ child sections still `visible=true`, so the tree looked healthy and every export
 empty. `figma-cli get <id>` reports the flag; `visible` is the first thing to check
 when an export looks wrong.
 
+## `getNodeByIdAsync` hangs on a nonexistent id rather than returning null
+
+A wrong node id does **not** resolve to `null` — the call never settles, and the CLI
+dies at its 90s execution timeout, then falls back to a sync path that also times out:
+
+```
+✗ Execution timeout (90s). Try reconnecting: node src/index.js connect
+⚠ Daemon error, trying sync path...
+✗ spawnSync … ETIMEDOUT
+```
+
+So the usual guard is not enough on its own — `if (!node) return "not found"` never
+runs, because control never reaches it:
+
+```js
+const node = await figma.getNodeByIdAsync(id);
+if (!node) return "not found";   // unreachable when `id` does not exist
+```
+
+Keep the guard (it catches a node deleted mid-session), but **verify an id exists
+before evaluating against it** — `figma-cli find <name>` or `figma-cli get <id>` both
+fail fast. A 90s hang inside a gate reads as a hung pipeline, not as a bad argument,
+which is what makes this expensive to diagnose.
+
+## Extracting an image fill: `export node` is the wrong tool
+
+`export node` rasterises the node **as composited on canvas** — every scrim, overlay,
+and vignette baked in, at whatever `--scale` you pass. Measured on one 1440×900 hero:
+a **4.07MB PNG** re-render versus the **766KB original JPEG** the fill actually holds.
+The re-render is both larger and wrong, since the overlays must stay live in CSS.
+
+Read the source bytes instead, via the fill's hash:
+
+```js
+const paint = node.fills.find(p => p.type === "IMAGE");
+const image = figma.getImageByHash(paint.imageHash);
+const bytes = await image.getBytesAsync();      // the original asset, byte-exact
+const size  = await image.getSizeAsync();       // natural dimensions
+```
+
+`scripts/extract-image.js` does this and prints base64 for the shell to decode.
+Verified byte-identical: 765,831 bytes in Figma, 765,831 on disk.
+
+Three things to carry across with it:
+
+| Figma | CSS |
+|---|---|
+| `scaleMode: "FILL"` | `object-fit: cover` |
+| `scaleMode: "FIT"` | `object-fit: contain` |
+| `scaleMode: "CROP"` | `cover` plus an offset from `imageTransform` |
+| `scaleMode: "TILE"` | `background-image` + `background-repeat` |
+
+**The fill's natural aspect ratio decides whether `object-position` does anything.**
+A portrait source in a landscape box has zero horizontal overflow, so a horizontal
+bias is a silent no-op — measured live: `object-position: 22%` and `50%` rendered
+identically on a 1920×2880 fill in a 1440×900 frame. Compute the overflow before
+tuning a crop, or the tuning is imaginary.
+
+The format is not recorded on the paint, so **sniff the magic bytes** (`FF D8` JPEG,
+`89 50` PNG, `47 49` GIF, `52 49` WebP). Naming a JPEG `.png` renders fine in a
+browser and breaks every image pipeline downstream.
+
 ## `verify` writes to `/tmp`, which is `C:\tmp` on Windows
 
 `figma-cli verify <nodeId>` saves to `/tmp/figma-verify-<id>.png`. Node resolves

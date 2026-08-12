@@ -80,7 +80,7 @@ Three of these were not in the original design and change it materially:
 - **Appearance** — `bg`, `stroke`, `strokeWidth`, `opacity`, `rounded`, `shadow`, `blur`
 - **Native effects** — `noise`, `texture`, `progressiveBlur`, `glass` (with refraction/depth/radius/dispersion/light controls)
 - **Icons** — `<Icon name="<prefix>:<name>" size color>` pulls real SVG from the Iconify API; `create icon` does the same standalone with `-s`/`-c` (and `-c` accepts `var:name`, so icon color stays token-bound). `lucide:` is the docs' example, **not a constraint** — any of Iconify's 231 collections works
-- **Raw SVG** — `<SVG>` accepts arbitrary SVG, which is the escape hatch for icon sets Iconify does not host
+- **Raw SVG** — ~~`<SVG>` accepts arbitrary SVG~~ **Disproved during implementation: there is no `<SVG>` element.** The parser's tag list is `Frame|Text|Icon|Rect|Rectangle|Ellipse|Circle|Image|Slot|Instance`, and using `<SVG>` fails with `SVG is not defined`. The real escape hatch for an unhosted set is `figma.createNodeFromSvg(svgString)` via `eval`/`run`, or `createInstance()` for a local component — see `skills/design/FIGMA-CLI.md`
 
 Documented gotchas, each a real failure mode: `layout="horizontal"` → `flex="row"`; `padding={24}` → `p={24}`; `fill="#fff"` → `bg="#fff"`; `cornerRadius={12}` → `rounded={12}`. And a hard rule from the tool's own `CLAUDE.md`: **never use `eval` to create visual nodes** — it bypasses positioning, name dedup, constraints, and every safety guard.
 

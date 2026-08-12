@@ -44,6 +44,40 @@ constraints, sizing. These map directly:
 Because the values are extracted rather than estimated, conversion is
 measurement, not interpretation.
 
+## Images travel as bytes, never as a stand-in
+
+`export-jsx` emits structure, not assets — so an image fill arrives as an empty box,
+and the fastest way to make the page look right is a placeholder URL.
+**A stand-in image passes every check in this pipeline**: it renders, it exits 0, the pixel diff
+still measures geometry, and the QA pass sees a plausible photograph. One shipped hero
+carried a stand-in Unsplash URL past a full fidelity pass and into production, with a
+`swap for final art when ready` comment nobody returned to.
+
+Extract the real fill:
+
+```bash
+figma-cli run scripts/extract-image.js > out.b64   # substitute __NODE_ID__, __META__
+base64 -d out.b64 > assets/hero.jpg
+```
+
+**Do not use `export node` for this.** It rasterises the composite — scrims and
+overlays baked in, 4.07MB versus the 766KB original on one measured hero — and those
+overlays need to stay live in CSS. `design/FIGMA-CLI.md` has the mechanism and the
+`scaleMode` → `object-fit` mapping.
+
+Three rules:
+
+1. **Verify the byte count** against the metadata mode's `bytes` field. A truncated
+   base64 decode produces a file that still opens.
+2. **Carry `width`/`height` from the natural size**, so the browser reserves space and
+   the image does not shift layout on arrival.
+3. **Check the aspect ratio before tuning `object-position`.** A portrait fill in a
+   landscape box has no horizontal overflow, so a horizontal bias does nothing —
+   measured live, `22%` and `50%` rendered identically.
+
+If the fill cannot be extracted, **say the image is missing** rather than substituting
+one. A named gap gets fixed; a plausible placeholder ships.
+
 ## Mapping
 
 1. Registry handle → existing project component. Check the project's component

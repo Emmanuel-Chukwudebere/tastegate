@@ -25,7 +25,10 @@ has "$R" "unavailable, report the cluster-detection health check as not run rath
 has "$R" "Never apply fixes from this skill. If the user wants them applied, that is"
 has "$R" "invoke \`improve-animations\` for a repo-wide motion audit with"
 has "$R" "Invoke \`review-animations\` on the code diff or implementation. Its posture is"
-has "$R" "Dispatch a sub-agent (model **sonnet**) with the brief in"
+# Dispatch must name the runtime resolver, not just "dispatch a sub-agent" -- the
+# one-line version shipped with no budget, no overlap, and no reference, which is how
+# an audit spends 195 calls re-deriving what step 1 already measured.
+has "$R" "Dispatch a sub-agent (model **sonnet**) per \`design/RUNTIMES.md\`"
 has "$R" "Escalate that pass to **opus** when the same dimension scores"
 # The inline fallback (for a single-skill install with no RUBRIC.md present)
 # must state the identical same-dimension rule, not just the process-step
