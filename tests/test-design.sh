@@ -11,7 +11,9 @@ ordered() { # $1 file, $2 earlier, $3 later
 S=skills/design/SKILL.md
 has "$S" "Read \`.claude/design/TASTE.md\`."
 has "$S" "Read \`.claude/design/registry.md\`. If empty, warn that output will be generated"
-has "$S" "figma-cli instantiate \"<ComponentName>\" # if yes, use it"
+# --file is REQUIRED on both registry reads: auto-locate skips dot-directories, so a
+# registry at .claude/design/registry.md is invisible without it. Pin the fixed form.
+has "$S" "figma-cli instantiate \"<ComponentName>\" --file .claude/design/registry.md # if yes, use it"
 has "$S" "figma-cli render-batch '[\"<Frame>…</Frame>\",\"<Frame>…</Frame>\"]' --verify"
 has "$S" "\`--verify\` returns a screenshot in the same call, so seeing the result costs no"
 has "$S" "bash scripts/gates.sh <nodeId> \"<ComponentName>\""
@@ -39,7 +41,9 @@ G=scripts/gates.sh
 # The old whole-file `lint --fix` must be GONE, not merely unused: at 57k nodes it
 # timed out, and --fix at that scope rewrites the whole design system.
 nothas "$G" "figma-cli lint --fix --json"
-has "$G" "if figma-cli spec \"\$COMPONENT\" --check \"\$NODE_ID\" --tolerance 2; then"
+# The spec gate must pass --file, or it reports "No DESIGN.md found" on a project that
+# HAS one and the check never actually runs -- a skip that reads like a pass.
+has "$G" "if figma-cli spec \"\$COMPONENT\" --check \"\$NODE_ID\" --tolerance 2 --file \"\$REGISTRY\"; then"
 
 Q=skills/design/qa-brief.md
 has "$Q" "\`[plugin]/skills/design/RUBRIC.md\` — your scoring method"

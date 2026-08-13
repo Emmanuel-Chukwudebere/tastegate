@@ -63,6 +63,24 @@ Write the component in the target framework, referencing the exported variables.
 Zero raw hex, zero magic numbers. Map registry handles to existing project
 components.
 
+**Resolve every registry handle to a real import before writing any markup.** Code
+drifts from a design system the same way Figma does — by re-implementing what exists —
+and here it is worse, because a re-implemented `Button` in a repo that already has one
+is a second source of truth that will diverge on the next change. `export-jsx` emits
+plain frames with no knowledge of your component library, so the scaffold *always*
+looks like it needs hand-writing.
+
+For each handle in `registry.md`, find the project's component and import it:
+
+```bash
+ls src/components ; grep -rl "export function Button\|export const Button" src/
+```
+
+Write the mapping down before emitting — handle → import path — and treat an
+unresolved handle as a finding to report, not a component to write. If the project
+genuinely lacks it, say so explicitly rather than quietly adding a parallel
+implementation.
+
 Generate every interaction state — see `states.md`. A Figma frame
 contains almost none of them, and their absence is what makes converted code feel
 unfinished.
@@ -81,6 +99,11 @@ things a pixel diff cannot see:
   a hardcoded value where a token belongs. These survive every visual check because
   they *look* correct. One shipped hero kept a stand-in Unsplash URL past a full
   fidelity pass for exactly this reason.
+- **a re-implemented component where the project already has one** — a local `Button`
+  beside the design system's. Like a placeholder image, it renders correctly and
+  passes the pixel diff; it is wrong only in that it now diverges on every future
+  change. Give the sub-agent the handle → import mapping and have it check the
+  imports, not the appearance.
 - **states that exist in `states.md` and not in the code**
 - **a second styling paradigm** entering a project that already has one
 - **tokens retyped rather than referenced**

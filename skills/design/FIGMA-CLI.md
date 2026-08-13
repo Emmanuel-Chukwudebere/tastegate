@@ -272,6 +272,54 @@ before evaluating against it** — `figma-cli find <name>` or `figma-cli get <id
 fail fast. A 90s hang inside a gate reads as a hung pipeline, not as a bad argument,
 which is what makes this expensive to diagnose.
 
+## `spec` and `instantiate` cannot see a registry in a dot-directory
+
+Both auto-locate a `DESIGN.md` by scanning cwd and one level of subdirectories, and
+that scan **skips every entry beginning with `.`** — which is exactly where this
+plugin writes its registry (`.claude/design/registry.md`). So the reuse path is dead
+by default:
+
+```bash
+figma-cli spec "Button"                                   # ✗ No DESIGN.md found
+figma-cli spec "Button" --file .claude/design/registry.md  # Button (60 variants)
+```
+
+Verified live against a real 42-component registry: the bare call reported
+`✗ No DESIGN.md found`, the `--file` call returned the full spec. **Always pass
+`--file`.** The same applies to `instantiate` and to `spec --check`, so
+`scripts/gates.sh` passes it too — without it, the spec gate never ran at all and
+reported a skip that looked like a pass.
+
+Two further constraints on the file itself:
+
+1. **Auto-locate requires the literal marker `Sample variant structure:`.** A `.md`
+   without it is not a candidate, even in cwd, even named `DESIGN.md`.
+2. **A component block needs `### Name`, a `· N variants` line, and a `Reuse:` line.**
+   `findComponentSpec` silently skips any block missing them, so a
+   plausible-looking hand-written registry parses to zero components.
+
+**The two failure messages are indistinguishable in practice.**
+`✗ No DESIGN.md found` and `✗ No component matching "Button"` are both a red `✗` at
+exit 1 — so "the registry is unreachable" reads the same as "this component does not
+exist," and the sensible response to the second (build it) is catastrophic for the
+first: the design system is never consulted and every build re-draws it. This is the
+mechanism behind "it keeps drifting from my components."
+
+## `extract` needs its output directory to exist, and times out unscoped
+
+Three failures, all found on a 6,287-component file:
+
+| Call | Result |
+|---|---|
+| `extract … .tmp/DESIGN.md` (no `.tmp/`) | `✖ ENOENT: no such file or directory` |
+| `extract --sections components` (unscoped) | `✖ Extraction failed: Connection timeout` |
+| `extract --pages "Components"` (no such page) | `✖ No pages match "Components"` |
+| `extract --sections components --pages "Style Guide"` | ✔ 55,915 nodes, 42 components |
+
+`mkdir -p` the target directory first, and scope with `--pages` using a name from
+`figma.root.children`, not a guess. All three failures exit non-zero, but all three
+print a `✖` that reads like a connection problem rather than a bad argument.
+
 ## Extracting an image fill: `export node` is the wrong tool
 
 `export node` rasterises the node **as composited on canvas** — every scrim, overlay,

@@ -69,8 +69,11 @@ commands they replace are broken rather than merely absent:
 - **`extract-image.js`** — `export node` rasterises an image fill as composited
   (4.07MB with the scrims baked in, versus the 766KB original on one measured hero),
   so there is no command that returns the source asset.
+- **`reuse-check.js`** — no command answers "did this build instance the design
+  system, or re-draw it?" `lint` reports detached instances only file-wide, at the
+  scope that times out.
 
-Without `scripts/`, those two checks do not run, and the skill says so rather than
+Without `scripts/`, those checks do not run, and the skill says so rather than
 implying they passed.
 
 ## Updating
@@ -150,6 +153,35 @@ inline and says so — see `skills/design/RUNTIMES.md`.
 
 Every stage refuses or warns without a taste profile, by design — grounding is the
 whole thesis.
+
+## Drift from your own components
+
+The most expensive failure is a build that ignores your design system and re-draws it.
+A hand-built `Button` passes lint, spec, a11y, fonts, and the pixel diff — visually it
+*is* a button. It is wrong only structurally: unlinked, so it never inherits a
+design-system change. Nothing in the pipeline used to check.
+
+Two causes, both silent, both now fixed:
+
+- **The registry was unreachable.** `figma-cli spec` and `instantiate` auto-locate a
+  `DESIGN.md` by scanning cwd and one level down — and that scan **skips every
+  dot-directory**, which is exactly where this plugin writes `.claude/design/registry.md`.
+  Measured against a real 42-component registry: `spec "Button"` printed
+  `✗ No DESIGN.md found`, while `spec "Button" --file .claude/design/registry.md`
+  returned the full 60-variant spec. Worse, `✗ No DESIGN.md found` and
+  `✗ No component matching "Button"` are both a red `✗` at exit 1 — so "unreachable"
+  reads exactly like "does not exist," and the sensible response to the second (build
+  it) is catastrophic for the first. Every stage now passes `--file`.
+- **Nothing verified reuse.** `scripts/reuse-check.js` resolves each INSTANCE to its
+  main component and flags frames named like a registry handle that are not one, plus
+  detached instances (a variant name like `Tab=Home` on a FRAME). It reports the
+  **root** of each drifted subtree and names how many descendants it rolled up — on one
+  real frame, 14 raw findings became 3 actual fixes. Zero instances against a non-empty
+  registry is reported as the loudest signal it has.
+
+`ship` gets the same rule for code, where a re-implemented component is a second
+source of truth: resolve every handle to a real import before writing markup, and
+report an unresolved one rather than quietly writing a parallel implementation.
 
 ## When the brand fights good UX
 

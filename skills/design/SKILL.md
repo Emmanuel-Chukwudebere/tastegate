@@ -62,15 +62,35 @@ value, it is a preference, not a finding — and the profile wins. A brand that 
 unlike your defaults is the point of grounding, not a defect to correct.
 
 ### 3. Reuse before building
-For every element, check the registry first:
+For every element, check the registry first — and **always pass `--file`**:
 
 ```bash
-figma-cli spec "<ComponentName>"        # does a handle exist?
-figma-cli instantiate "<ComponentName>" # if yes, use it
+figma-cli spec "<ComponentName>" --file .claude/design/registry.md        # does a handle exist?
+figma-cli instantiate "<ComponentName>" --file .claude/design/registry.md # if yes, use it
 ```
 
+**`--file` is mandatory, not a convenience.** Both commands auto-locate a
+`DESIGN.md` by scanning cwd and one level of subdirectories — and that scan
+**skips every dot-directory**, which is exactly where this plugin writes its
+registry. Verified live: with a valid 42-component registry at
+`.claude/design/registry.md`, the bare `figma-cli spec "Button"` printed
+`✗ No DESIGN.md found` while the same call with `--file` returned the full
+60-variant spec.
+
+**That failure is the drift.** `✗ No DESIGN.md found` and
+`✗ No component matching "Button"` are both a red `✗` at exit 1, so "the registry
+is unreachable" is indistinguishable from "this component does not exist" — and the
+reasonable next step for both is to build it by hand. The design system is never
+consulted, and every build re-draws what already exists.
+
 **Never rebuild what exists.** Composing by handle costs a fraction of emitting
-geometry, and keeps the component tree linked.
+geometry, and keeps the component tree linked so the build inherits later
+design-system changes.
+
+**A `✗` from either command is a stop, not a signal to build.** Distinguish the two
+causes before proceeding: if `--file` points at a real file and the component is
+genuinely absent, say so and build it; if the registry is missing or unparseable,
+that is a `/taste` problem — fix it there rather than hand-building around it.
 
 ### 4. Build
 ```bash
@@ -96,12 +116,30 @@ a failed lookup and is invisible in the render's own output.
 
 ### 5. Gate — deterministic, before any model critique
 ```bash
-bash scripts/gates.sh <nodeId> "<ComponentName>"
+bash scripts/gates.sh <nodeId> "<ComponentName>" [.claude/design/registry.md]
 ```
 
-This runs a scoped lint, `spec --check`, `a11y audit`, and the font check — all four
-in ~7s, all free and exact. **A `spec --check` failure is a hard stop, not a finding**
-— the build is off-spec; fix it before critique is worth running.
+This runs a scoped lint, the **reuse check**, `spec --check`, `a11y audit`, and the
+font check — all five in ~7s, all free and exact. **A `spec --check` failure is a
+hard stop, not a finding** — the build is off-spec; fix it before critique is worth
+running.
+
+**The reuse check is the one no other gate can substitute for.** A hand-built
+`Button` passes lint, spec, a11y, fonts, and the pixel diff, because visually it *is*
+a button — it is wrong only structurally: unlinked, so it never inherits a
+design-system change. `scripts/reuse-check.js` resolves every INSTANCE to its main
+component and flags any frame named like a registry handle that is not one, plus any
+detached instance (a variant name such as `Tab=Home` sitting on a FRAME). It reports
+the **root** of each drifted subtree, not every node inside it, and names how many
+descendants it rolled up.
+
+Zero instances against a non-empty registry is the loudest signal it emits: the
+design system was available and went entirely unused.
+
+**Without `scripts/`**, run the reuse check as an `eval` walk of the subtree —
+resolve each INSTANCE with `getMainComponentAsync()` and compare frame names against
+the registry's `### ` headings. Never skip it silently; it is the check that catches
+drift from the user's own components.
 
 **Never gate with `figma-cli lint`.** It has no scoping flag and ignores the current
 selection, so it always walks the whole document: measured at 36–41s and then a

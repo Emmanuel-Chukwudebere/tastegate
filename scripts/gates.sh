@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # Deterministic quality gates. Runs BEFORE any model-based critique so the
 # expensive pass never spends attention on tool-detectable defects.
-# Usage: gates.sh [nodeId] [component-name]
+# Usage: gates.sh [nodeId] [component-name] [registry-path]
 set -uo pipefail
 NODE_ID="${1:-}"
 COMPONENT="${2:-}"
+REGISTRY="${3:-.claude/design/registry.md}"
 GATE_FAIL=0
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -59,9 +60,43 @@ else
   echo "GATE: lint-node.js not found; skipping scoped lint (do NOT substitute whole-file lint)."
 fi
 
+# Reuse: did this build INSTANCE the design system, or re-draw it? Nothing else
+# here can tell. A hand-built Button passes lint, spec, a11y, fonts, and a pixel
+# diff, because visually it IS a button — it is only wrong structurally, and it
+# never inherits a design-system change. This is the defect users report as
+# "it keeps drifting from my components."
+echo "GATE: reuse (scoped to $NODE_ID)"
+REUSE_SRC="$HERE/reuse-check.js"
+if [ -f "$REUSE_SRC" ]; then
+  # Handles come from the registry's own `### Name` headings — the same blocks
+  # `figma-cli spec` parses, so the gate and the reuse path agree by construction.
+  if [ -f "$REGISTRY" ]; then
+    HANDLES="$(grep '^### ' "$REGISTRY" | sed 's/^### //' | paste -sd, -)"
+  else
+    HANDLES=""
+    echo "GATE: reuse — no registry at $REGISTRY; reuse cannot be checked."
+  fi
+  REUSE_RUN_SH="$SCRATCH_SH/gate-reuse-$$.js"; REUSE_RUN="$SCRATCH_WIN/gate-reuse-$$.js"
+  # `|` as the sed delimiter: component names contain / (vuesax/twotone/add).
+  sed -e "s/__NODE_ID__/$NODE_ID/" -e "s|__HANDLES__|$HANDLES|" "$REUSE_SRC" > "$REUSE_RUN_SH"
+  REUSE_OUT="$(figma-cli run "$REUSE_RUN" 2>&1)"
+  echo "$REUSE_OUT"
+  rm -f "$REUSE_RUN_SH"
+  if echo "$REUSE_OUT" | grep -q "ERROR"; then
+    echo "GATE: reuse VIOLATION - hand-built what the registry already has."
+    echo "GATE: reuse Instantiate it instead: figma-cli instantiate \"<Name>\" --file $REGISTRY"
+    GATE_FAIL=1
+  fi
+else
+  echo "GATE: reuse-check.js not found; reuse NOT checked."
+fi
+
 if [ -n "$COMPONENT" ]; then
+  # --file is REQUIRED, not optional: auto-locate skips every dot-directory, so a
+  # registry at .claude/design/registry.md is invisible to it and this reports
+  # "No DESIGN.md found" on a project that has one. Verified live.
   echo "GATE: spec --check $COMPONENT against $NODE_ID"
-  if figma-cli spec "$COMPONENT" --check "$NODE_ID" --tolerance 2; then
+  if figma-cli spec "$COMPONENT" --check "$NODE_ID" --tolerance 2 --file "$REGISTRY"; then
     echo "GATE: spec OK"
   else
     echo "GATE: spec VIOLATION - build is off-spec. Fix before critique."
