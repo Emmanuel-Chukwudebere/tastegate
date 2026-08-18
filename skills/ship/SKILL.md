@@ -1,6 +1,10 @@
 ---
 name: ship
 description: Use when converting a Figma design into code, implementing a design in React or another framework, when the user asks to build the design for real, or when they want the design turned into components.
+license: MIT
+metadata:
+  author: Emmanuel Chukwudebere
+  homepage: https://github.com/Emmanuel-Chukwudebere/claude-design
 ---
 
 # Ship

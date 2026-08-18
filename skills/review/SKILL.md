@@ -1,6 +1,10 @@
 ---
 name: review
 description: Use when the user asks for design feedback, a design review, or an audit of existing UI, when they ask why something feels wrong or unpolished, or before shipping a design or component.
+license: MIT
+metadata:
+  author: Emmanuel Chukwudebere
+  homepage: https://github.com/Emmanuel-Chukwudebere/claude-design
 ---
 
 # Review

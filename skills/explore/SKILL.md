@@ -1,6 +1,10 @@
 ---
 name: explore
 description: Use when the design direction is not settled, when the user wants options or alternatives before committing, at the start of a new project or screen, or when they ask to see different approaches.
+license: MIT
+metadata:
+  author: Emmanuel Chukwudebere
+  homepage: https://github.com/Emmanuel-Chukwudebere/claude-design
 ---
 
 # Explore

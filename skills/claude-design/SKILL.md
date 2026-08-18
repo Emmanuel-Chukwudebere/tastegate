@@ -1,6 +1,10 @@
 ---
 name: claude-design
 description: Use as the single entry point for any design work — the router that decides which pipeline stages a request needs and runs them in order. Use when the user asks to design, build, redesign, or ship a screen or component and has not named a stage, when they say "design this" or "build this in Figma" or "make this real", or when they want the whole path from reference to code.
+license: MIT
+metadata:
+  author: Emmanuel Chukwudebere
+  homepage: https://github.com/Emmanuel-Chukwudebere/claude-design
 ---
 
 # claude-design

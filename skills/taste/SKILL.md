@@ -1,6 +1,10 @@
 ---
 name: taste
 description: Use when starting design work in a project that has no taste profile yet, when the user provides design references (images, URLs, a Figma moodboard, brand tokens), when the user says the output does not match their taste, or when they ask to update the design direction.
+license: MIT
+metadata:
+  author: Emmanuel Chukwudebere
+  homepage: https://github.com/Emmanuel-Chukwudebere/claude-design
 ---
 
 # Taste

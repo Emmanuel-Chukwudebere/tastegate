@@ -1,6 +1,10 @@
 ---
 name: design
 description: Use when building or reshaping UI in Figma, creating screens or components, or when the user asks for a design, layout, or interface in a project that has a taste profile.
+license: MIT
+metadata:
+  author: Emmanuel Chukwudebere
+  homepage: https://github.com/Emmanuel-Chukwudebere/claude-design
 ---
 
 # Design

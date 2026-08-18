@@ -296,7 +296,24 @@ says so rather than asserting unverified results.
 
 ## License
 
-MIT. Emil Kowalski's skills are MIT and separately installed.
+MIT — Copyright (c) 2026 Emmanuel Chukwudebere. Full text in [`LICENSE`](LICENSE).
+
+Every skill carries the same grant in its own frontmatter (`license: MIT` plus
+`metadata.author`), because a skill travels on its own: installed one at a time with
+`npx skills@latest add`, copied into `~/.claude/skills/`, or uploaded to claude.ai, it
+arrives as a single `SKILL.md` with no repository around it. A licence that lives only
+in this file does not travel with it, and an unattributed `SKILL.md` in someone else's
+skills directory has nothing in it to say whose work it is.
+
+`author` sits inside `metadata` rather than at the top level deliberately. The Agent
+Skills spec allows exactly six frontmatter keys — `name`, `description`, `license`,
+`compatibility`, `metadata`, `allowed-tools` — and anything else is a hard error on
+upload, not an ignored field: `Unexpected key(s) in SKILL.md frontmatter`. A top-level
+`author:` would make every skill here unpackageable. `tests/test-metadata.sh` gates
+both the presence of the attribution and that restriction.
+
+Emil Kowalski's skills are MIT and separately installed; this plugin depends on them
+and ships no copy of them.
 
 ## Verify
 

@@ -1,10 +1,13 @@
 {
   "name": "claude-design",
   "description": "Design with taste: grounds UI work in your design system and references, self-checks output before showing it, and ships pixel-perfect code.",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "author": {
-    "name": "imman"
+    "name": "Emmanuel Chukwudebere",
+    "url": "https://github.com/Emmanuel-Chukwudebere"
   },
+  "homepage": "https://github.com/Emmanuel-Chukwudebere/claude-design",
+  "repository": "https://github.com/Emmanuel-Chukwudebere/claude-design",
   "license": "MIT",
   "keywords": [
     "design",
