@@ -55,7 +55,7 @@ has "$S" "budget**, and tell it **not to re-derive**"
 has "$S" "On a single-component job, skip this"
 
 # The router must state the rule once, since it sequences the stages.
-R2=skills/claude-design/SKILL.md
+R2=skills/tastegate/SKILL.md
 has "$R2" "Every audit in this pipeline is a"
 has "$R2" "a fresh context reviews code the way a reader will"
 
@@ -108,7 +108,7 @@ has "$X" "0x8000"
 has "$X" "the fill may live on one of them"
 
 # The spec's disproved <SVG> claim must be marked, not left as guidance.
-SP=docs/superpowers/specs/2026-08-06-claude-design-local-design.md
+SP=docs/superpowers/specs/2026-08-06-tastegate-local-design.md
 has "$SP" "Disproved during implementation: there is no \`<SVG>\` element"
 has "$SP" "createNodeFromSvg"
 

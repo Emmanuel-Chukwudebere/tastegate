@@ -1,4 +1,4 @@
-# claude-design — a local Claude Design, grounded in your taste
+# tastegate — a local Claude Design, grounded in your taste
 
 **Date:** 2026-08-06
 **Status:** approved design, ready for implementation planning
@@ -447,7 +447,7 @@ This follows the pattern Superpowers already uses in production — skills are w
 The repo must be installable **both** ways, from one layout:
 
 ```bash
-claude --plugin-dir ./claude-design                    # Claude Code plugin
+claude --plugin-dir ./tastegate                    # Claude Code plugin
 npx skills@latest add emmanuel-chukwudebere/skills     # any agent, any runtime
 ```
 

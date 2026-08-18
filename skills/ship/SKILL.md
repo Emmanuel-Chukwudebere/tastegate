@@ -4,7 +4,7 @@ description: Use when converting a Figma design into code, implementing a design
 license: MIT
 metadata:
   author: Emmanuel Chukwudebere
-  homepage: https://github.com/Emmanuel-Chukwudebere/claude-design
+  homepage: https://github.com/Emmanuel-Chukwudebere/tastegate
 ---
 
 # Ship

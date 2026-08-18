@@ -1,19 +1,19 @@
 ---
-name: claude-design
+name: tastegate
 description: Use as the single entry point for any design work — the router that decides which pipeline stages a request needs and runs them in order. Use when the user asks to design, build, redesign, or ship a screen or component and has not named a stage, when they say "design this" or "build this in Figma" or "make this real", or when they want the whole path from reference to code.
 license: MIT
 metadata:
   author: Emmanuel Chukwudebere
-  homepage: https://github.com/Emmanuel-Chukwudebere/claude-design
+  homepage: https://github.com/Emmanuel-Chukwudebere/tastegate
 ---
 
-# claude-design
+# tastegate
 
 One entry point for the whole pipeline. Reads the request, decides which stages it
 needs, runs them in the right order, and carries state between them.
 
 Use this when the stage is not obvious. Call a stage directly when it is —
-`/claude-design:review` on an existing screen needs no router.
+`/tastegate:review` on an existing screen needs no router.
 
 ## The stages
 

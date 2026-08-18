@@ -1,13 +1,13 @@
 {
-  "name": "claude-design",
+  "name": "tastegate",
   "description": "Design with taste: grounds UI work in your design system and references, self-checks output before showing it, and ships pixel-perfect code.",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "author": {
     "name": "Emmanuel Chukwudebere",
     "url": "https://github.com/Emmanuel-Chukwudebere"
   },
-  "homepage": "https://github.com/Emmanuel-Chukwudebere/claude-design",
-  "repository": "https://github.com/Emmanuel-Chukwudebere/claude-design",
+  "homepage": "https://github.com/Emmanuel-Chukwudebere/tastegate",
+  "repository": "https://github.com/Emmanuel-Chukwudebere/tastegate",
   "license": "MIT",
   "keywords": [
     "design",

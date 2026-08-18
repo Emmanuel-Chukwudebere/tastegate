@@ -6,10 +6,10 @@ ordered() { local a b; a=$(grep -n "$2" "$1" | head -1 | cut -d: -f1); b=$(grep 
   if [ -n "$a" ] && [ -n "$b" ] && [ "$a" -lt "$b" ]; then echo "  PASS: '$2' before '$3'"; PASS=$((PASS+1));
   else echo "  FAIL: '$2' must come before '$3'"; FAIL=$((FAIL+1)); fi; }
 
-R=skills/claude-design/SKILL.md
+R=skills/tastegate/SKILL.md
 
 # The router must exist as a real skill with frontmatter, or it cannot be invoked.
-has "$R" "name: claude-design"
+has "$R" "name: tastegate"
 has "$R" "description: Use as the single entry point"
 
 # It must decide, not delegate the decision back to the user — the whole point.

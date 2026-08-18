@@ -49,8 +49,8 @@ has "$R" 'No image input → skip the visual pass, run `figma-cli lint`, `a11y a
 has "$R" 'token-compliance checks, and **state plainly** that visual verification did not'
 
 M=README.md
-has "$M" "claude --plugin-dir /path/to/claude-design"
-has "$M" "npx skills@latest add emmanuel-chukwudebere/claude-design"
+has "$M" "claude --plugin-dir /path/to/tastegate"
+has "$M" "npx skills@latest add emmanuel-chukwudebere/tastegate"
 has "$M" "npm i -g figma-ds-cli                        # Figma control, no API key"
 has "$M" "npx skills@latest add emilkowalski/skills    # motion + interaction layer (MIT)"
 # Grounding must stay mandatory in the README, and the router must be documented as

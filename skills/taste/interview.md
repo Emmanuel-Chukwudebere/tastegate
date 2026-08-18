@@ -47,4 +47,4 @@ concrete options over open prompts. Record answers directly into `TASTE.md`.
 
 Write `TASTE.md` with every field filled. Mark all values as **inferred from
 interview** rather than measured. Then state plainly that adding real references
-later via `/claude-design:taste` will sharpen the profile.
+later via `/tastegate:taste` will sharpen the profile.

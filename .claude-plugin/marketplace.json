@@ -7,7 +7,7 @@
   },
   "plugins": [
     {
-      "name": "claude-design",
+      "name": "tastegate",
       "source": "./",
       "description": "Design with taste: grounds UI work in your design system and references, self-checks output before showing it, and ships pixel-perfect code."
     }

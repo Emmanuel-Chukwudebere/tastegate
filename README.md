@@ -1,13 +1,24 @@
-# claude-design
+# tastegate
 
-A design pipeline for Claude Code that grounds UI work in your taste, checks its
-own output before showing it, and ships pixel-perfect code.
+**Nothing reaches you ungated.**
 
-It reproduces the three mechanisms behind Anthropic's hosted Claude Design
-product — component grounding, a closed-loop self-check, and parallel
-explorations — locally, and adds motion, typography, and accessibility standards
-that product does not enforce. It works with 3rd-party login on Claude Code, where the hosted
-`/design-sync` path is unavailable.
+A design pipeline for Claude Code that grounds UI work in your own design system and
+references, gates its output deterministically before showing it, and ships code
+measured against the design.
+
+The name is the architecture. Every stage is a gate, and each one refuses rather than
+degrades: no build without a taste profile, no hand-drawn component your Figma file
+already has, no "converged" until the pixel diff is inside a stated tolerance
+(±8pt position, ±3pt cap-height). The gates are free and exact — a scoped lint,
+reuse, spec, a11y, and font bindings in ~7s — and they run before any model critique,
+so nothing pays a language model to find what a check finds for nothing. It also
+enforces motion, typography, and accessibility standards.
+
+It shares three mechanisms with Anthropic's hosted Claude Design product — component
+grounding, a closed-loop self-check, and parallel explorations — runs them locally,
+and adds the standards above. It works with 3rd-party login on Claude Code, where the
+hosted `/design-sync` path is unavailable. Independent project, unaffiliated with
+Anthropic.
 
 ## Requirements
 
@@ -29,32 +40,32 @@ Three ways, same repo.
 agent the `skills` CLI supports:
 
 ```bash
-npx skills@latest add emmanuel-chukwudebere/claude-design
+npx skills@latest add emmanuel-chukwudebere/tastegate
 ```
 
 Add one skill only, if you prefer:
 
 ```bash
-npx skills@latest use emmanuel-chukwudebere/claude-design/skills/taste
+npx skills@latest use emmanuel-chukwudebere/tastegate/skills/taste
 ```
 
 **As a Claude Code plugin, from the marketplace** — namespaced skills plus the
 helper scripts:
 
 ```bash
-claude plugin marketplace add Emmanuel-Chukwudebere/claude-design
-claude plugin install claude-design@emmanuel-chukwudebere
+claude plugin marketplace add Emmanuel-Chukwudebere/tastegate
+claude plugin install tastegate@emmanuel-chukwudebere
 ```
 
 **As a Claude Code plugin, from a local checkout** — for development:
 
 ```bash
-claude --plugin-dir /path/to/claude-design
+claude --plugin-dir /path/to/tastegate
 ```
 
 Then `/reload-plugins` after edits.
 
-Under the plugin, skills are namespaced (`/claude-design:taste`). Under
+Under the plugin, skills are namespaced (`/tastegate:taste`). Under
 `npx skills add`, they install unnamespaced (`/taste`). Both work.
 
 The plugin also brings `scripts/`. `preflight.sh` and `gates.sh` only compose
@@ -93,7 +104,7 @@ marketplace suffix**:
 
 ```bash
 claude plugin marketplace update emmanuel-chukwudebere      # fetches the repo
-claude plugin update claude-design@emmanuel-chukwudebere    # installs the new version
+claude plugin update tastegate@emmanuel-chukwudebere    # installs the new version
 ```
 
 Then restart the session.
@@ -105,16 +116,16 @@ Three traps here, each of which silently leaves you on the old version:
   `~/.claude/plugins/marketplaces/<name>/` and only moves when you run
   `marketplace update` — so reloading against a three-day-old clone reports the old
   version forever, with no error.
-- **The bare name fails.** `claude plugin update claude-design` exits with
-  `Plugin "claude-design" not found`. The installed key is
-  `claude-design@emmanuel-chukwudebere`; use it.
+- **The bare name fails.** `claude plugin update tastegate` exits with
+  `Plugin "tastegate" not found`. The installed key is
+  `tastegate@emmanuel-chukwudebere`; use it.
 - **Skipping the marketplace step is a silent no-op.** `plugin update` compares
   against the local clone, so without the fetch it correctly finds nothing to do.
 
 To confirm which version is actually live:
 
 ```bash
-ls ~/.claude/plugins/cache/emmanuel-chukwudebere/claude-design/
+ls ~/.claude/plugins/cache/emmanuel-chukwudebere/tastegate/
 ```
 
 **If you publish changes, bump `version` in `.claude-plugin/plugin.json`.** Users
@@ -123,7 +134,7 @@ only receive plugin updates when that field changes; leave it alone and
 entirely and the commit SHA is used instead, making every commit an update — fine
 for a fast-moving fork, noisy for a published plugin.)
 
-**Developing?** Skip both. `claude --plugin-dir /path/to/claude-design` reads the
+**Developing?** Skip both. `claude --plugin-dir /path/to/tastegate` reads the
 working tree directly, so `/reload-plugins` picks up an edit with no version bump
 and no reinstall.
 
@@ -131,12 +142,12 @@ and no reinstall.
 
 | Command | When |
 |---|---|
-| **`/claude-design`** | **Don't know which stage? Start here.** Routes the request and runs the stages in order |
-| `/claude-design:taste` | First, in any new project. Builds the taste profile |
-| `/claude-design:explore` | Direction not settled — three real options |
-| `/claude-design:design` | Build UI in Figma, self-checked before you see it |
-| `/claude-design:ship` | Figma → code, framework of your choice |
-| `/claude-design:review` | Scored audit of existing design or code |
+| **`/tastegate`** | **Don't know which stage? Start here.** Routes the request and runs the stages in order |
+| `/tastegate:taste` | First, in any new project. Builds the taste profile |
+| `/tastegate:explore` | Direction not settled — three real options |
+| `/tastegate:design` | Build UI in Figma, self-checked before you see it |
+| `/tastegate:ship` | Figma → code, framework of your choice |
+| `/tastegate:review` | Scored audit of existing design or code |
 
 The router decides which stages a request needs — it runs `taste` when no profile
 exists, `explore` when the direction is unsettled, and `design` before `ship` so the

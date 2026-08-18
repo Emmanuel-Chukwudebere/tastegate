@@ -141,7 +141,7 @@ has skills/review/SKILL.md "design/CONFLICT.md"
 has skills/ship/SKILL.md "design/TEXT-GEOMETRY.md"
 has skills/ship/SKILL.md "Compare **ink to ink**"
 has skills/ship/states.md "design/CONFLICT.md"
-has skills/claude-design/SKILL.md "Compare ink to ink, never box to box"
+has skills/tastegate/SKILL.md "Compare ink to ink, never box to box"
 has skills/taste/TASTE-template.md "## Accepted exceptions"
 has skills/taste/TASTE-template.md "Never re-raise an entry here"
 

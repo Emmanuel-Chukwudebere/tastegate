@@ -13,7 +13,7 @@ check "reports emil skills check"   'grep -q "PREFLIGHT: emil-skills" <<<"$OUT"'
 check "reports playwright check"    'grep -q "PREFLIGHT: playwright" <<<"$OUT"'
 check "reports figma-use check"     'grep -q "PREFLIGHT: figma-use" <<<"$OUT"'
 check "manifest is valid json"      'node -e "JSON.parse(require(\"fs\").readFileSync(\".claude-plugin/plugin.json\",\"utf8\"))"'
-check "manifest name is claude-design" 'node -e "const m=JSON.parse(require(\"fs\").readFileSync(\".claude-plugin/plugin.json\",\"utf8\"));process.exit(m.name===\"claude-design\"?0:1)"'
+check "manifest name is tastegate" 'node -e "const m=JSON.parse(require(\"fs\").readFileSync(\".claude-plugin/plugin.json\",\"utf8\"));process.exit(m.name===\"tastegate\"?0:1)"'
 
 # Test exit code: preflight must exit non-zero when figma-cli is absent
 TMPDIR_STUB="$(mktemp -d)"

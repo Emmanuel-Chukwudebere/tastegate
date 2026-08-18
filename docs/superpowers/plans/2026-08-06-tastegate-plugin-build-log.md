@@ -1,4 +1,4 @@
-# SDD ledger — plan: docs/superpowers/plans/2026-08-06-claude-design-plugin.md
+# SDD ledger — plan: docs/superpowers/plans/2026-08-06-tastegate-plugin.md
 
 merge-base: fa4ca0cd73f8443cb71f9e0e686f0314661c45ce
 

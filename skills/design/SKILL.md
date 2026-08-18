@@ -4,7 +4,7 @@ description: Use when building or reshaping UI in Figma, creating screens or com
 license: MIT
 metadata:
   author: Emmanuel Chukwudebere
-  homepage: https://github.com/Emmanuel-Chukwudebere/claude-design
+  homepage: https://github.com/Emmanuel-Chukwudebere/tastegate
 ---
 
 # Design
@@ -34,7 +34,7 @@ silently skip a check while implying it ran.
    exists (soft), and whether `playwright` and `figma-use` resolve via `npm root
    -g` (soft — both are optional dependencies).
 2. Read `.claude/design/TASTE.md`. **If it does not exist, refuse** and direct the
-   user to `/claude-design:taste`. Grounding is mandatory — building without it
+   user to `/tastegate:taste`. Grounding is mandatory — building without it
    produces exactly the untethered output this plugin exists to prevent.
 3. Read `.claude/design/registry.md`. If empty, warn that output will be generated
    rather than composed, then proceed.

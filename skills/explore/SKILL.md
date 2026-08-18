@@ -4,7 +4,7 @@ description: Use when the design direction is not settled, when the user wants o
 license: MIT
 metadata:
   author: Emmanuel Chukwudebere
-  homepage: https://github.com/Emmanuel-Chukwudebere/claude-design
+  homepage: https://github.com/Emmanuel-Chukwudebere/tastegate
 ---
 
 # Explore

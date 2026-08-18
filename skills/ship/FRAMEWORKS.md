@@ -1,6 +1,6 @@
 # Framework Targets
 
-Default target is **React**. The user may name another: `/claude-design:ship vue`,
+Default target is **React**. The user may name another: `/tastegate:ship vue`,
 `… svelte`, `… react-native`, `… html`.
 
 **Detect before asking.** Read `package.json`, config files, and existing

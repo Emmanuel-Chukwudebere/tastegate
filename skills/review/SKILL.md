@@ -4,7 +4,7 @@ description: Use when the user asks for design feedback, a design review, or an 
 license: MIT
 metadata:
   author: Emmanuel Chukwudebere
-  homepage: https://github.com/Emmanuel-Chukwudebere/claude-design
+  homepage: https://github.com/Emmanuel-Chukwudebere/tastegate
 ---
 
 # Review
@@ -105,4 +105,4 @@ other side too — a design that diverges from convention because the profile sa
 is not a finding at all.
 
 Never apply fixes from this skill. If the user wants them applied, that is
-`/claude-design:design` or `/claude-design:ship`.
+`/tastegate:design` or `/tastegate:ship`.

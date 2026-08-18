@@ -20,15 +20,15 @@ The plugin's "sight" mechanism, and the basis of the visual QA pass.
 Command:
 
 ```
-figma-cli render '<Frame flex="col" p={24} gap={16} bg="var:neutral/900" rounded={16} w={360} name="claude-design-smoketest2"><Text size={24} weight="bold" color="var:neutral/white">Smoke test</Text><Text size={14} color="var:neutral/300">Slash-form token references.</Text></Frame>' --verify -c Primitives
+figma-cli render '<Frame flex="col" p={24} gap={16} bg="var:neutral/900" rounded={16} w={360} name="tastegate-smoketest2"><Text size={24} weight="bold" color="var:neutral/white">Smoke test</Text><Text size={14} color="var:neutral/300">Slash-form token references.</Text></Frame>' --verify -c Primitives
 ```
 
 Output:
 
 ```
 ✓ Rendered: 334:5467
-  name: claude-design-smoketest2
-{"verify":{"id":"334:5467","name":"claude-design-smoketest2","width":360,"height":110,"saved":"C:\\Users\\imman\\AppData\\Local\\Temp\\figma-verify-334-5467.png"}}
+  name: tastegate-smoketest2
+{"verify":{"id":"334:5467","name":"tastegate-smoketest2","width":360,"height":110,"saved":"C:\\Users\\imman\\AppData\\Local\\Temp\\figma-verify-334-5467.png"}}
 ```
 
 Reading that PNG showed a dark card, white bold heading, muted subtext — bound to
@@ -160,7 +160,7 @@ Exit 0 is correct: both are optional, so canvas-only work is unaffected.
 ```
 figma-cli undo
 ✓ Removed 1 node(s) from the last render:
-  claude-design-smoketest2
+  tastegate-smoketest2
 ```
 
 `undo` removes only the last render's nodes, so the earlier test frame needed

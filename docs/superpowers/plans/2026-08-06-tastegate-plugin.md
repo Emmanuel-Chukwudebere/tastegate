@@ -1,4 +1,4 @@
-# claude-design Plugin Implementation Plan
+# tastegate Plugin Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -19,7 +19,7 @@ Copied verbatim from the spec. Every task's requirements implicitly include this
 - **Therefore: standards live inside the skill that owns them**, not in a repo-root `standards/`. Skills locate a standard by checking their own directory first, then sibling skill directories, and degrade to their own rules if absent.
 - **Every script has a documented inline equivalent.** `scripts/` is only reachable under the plugin install, so no skill may hard-depend on one.
 - **Skill descriptions state ONLY triggering conditions**, never a workflow summary. A description that summarizes workflow becomes a shortcut agents take instead of reading the skill body.
-- **Plugin skills are namespaced:** `/claude-design:taste`, `/claude-design:design`, etc.
+- **Plugin skills are namespaced:** `/tastegate:taste`, `/tastegate:design`, etc.
 - **Never use `figma-cli eval` to create visual nodes.** It bypasses positioning, name dedup, constraints, and every safety guard.
 - **JSX dialect (exact):** `flex="row|col"` not `layout=`; `p={24}` not `padding=`; `bg="#fff"` not `fill=`; `rounded={16}` not `cornerRadius=`.
 - **Animate only `transform` and `opacity`.** Never `width`, `height`, `margin`, `padding`, `top`, `left`.
@@ -84,7 +84,7 @@ behaviour.
 
 **Interfaces:**
 - Consumes: nothing (first task)
-- Produces: a loadable plugin named `claude-design`; `scripts/preflight.sh` exiting 0 when Figma Desktop is reachable and `figma-cli` is installed, non-zero otherwise, printing a `PREFLIGHT:` prefixed line per check
+- Produces: a loadable plugin named `tastegate`; `scripts/preflight.sh` exiting 0 when Figma Desktop is reachable and `figma-cli` is installed, non-zero otherwise, printing a `PREFLIGHT:` prefixed line per check
 
 - [ ] **Step 1: Write the failing test**
 
@@ -103,7 +103,7 @@ check "reports figma-cli presence" 'grep -q "PREFLIGHT: figma-cli" <<<"$OUT"'
 check "reports figma desktop check" 'grep -q "PREFLIGHT: figma-desktop" <<<"$OUT"'
 check "reports emil skills check"   'grep -q "PREFLIGHT: emil-skills" <<<"$OUT"'
 check "manifest is valid json"      'node -e "JSON.parse(require(\"fs\").readFileSync(\".claude-plugin/plugin.json\",\"utf8\"))"'
-check "manifest name is claude-design" 'node -e "const m=JSON.parse(require(\"fs\").readFileSync(\".claude-plugin/plugin.json\",\"utf8\"));process.exit(m.name===\"claude-design\"?0:1)"'
+check "manifest name is tastegate" 'node -e "const m=JSON.parse(require(\"fs\").readFileSync(\".claude-plugin/plugin.json\",\"utf8\"));process.exit(m.name===\"tastegate\"?0:1)"'
 
 echo "PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ]
@@ -120,7 +120,7 @@ Create `.claude-plugin/plugin.json`:
 
 ```json
 {
-  "name": "claude-design",
+  "name": "tastegate",
   "description": "Design with taste: grounds UI work in your design system and references, self-checks output before showing it, and ships pixel-perfect code.",
   "version": "0.1.0",
   "author": {
@@ -697,7 +697,7 @@ Expected: FAIL on all 11 checks — neither file exists.
 ```markdown
 # Framework Targets
 
-Default target is **React**. The user may name another: `/claude-design:ship vue`,
+Default target is **React**. The user may name another: `/tastegate:ship vue`,
 `… svelte`, `… react-native`, `… html`.
 
 **Detect before asking.** Read `package.json`, config files, and existing
@@ -1124,7 +1124,7 @@ concrete options over open prompts. Record answers directly into `TASTE.md`.
 
 Write `TASTE.md` with every field filled. Mark all values as **inferred from
 interview** rather than measured. Then state plainly that adding real references
-later via `/claude-design:taste` will sharpen the profile.
+later via `/tastegate:taste` will sharpen the profile.
 ```
 
 - [ ] **Step 6: Write `skills/taste/TASTE-template.md`**
@@ -1329,7 +1329,7 @@ output, and only then shows the result.
 
 1. Run `bash scripts/preflight.sh`. Stop on hard failure.
 2. Read `.claude/design/TASTE.md`. **If it does not exist, refuse** and direct the
-   user to `/claude-design:taste`. Grounding is mandatory — building without it
+   user to `/tastegate:taste`. Grounding is mandatory — building without it
    produces exactly the untethered output this plugin exists to prevent.
 3. Read `.claude/design/registry.md`. If empty, warn that output will be generated
    rather than composed, then proceed.
@@ -1915,7 +1915,7 @@ Order findings by severity. Each carries evidence and an exact fix. Close with a
 prioritized implementation plan the user or another agent can execute.
 
 Never apply fixes from this skill. If the user wants them applied, that is
-`/claude-design:design` or `/claude-design:ship`.
+`/tastegate:design` or `/tastegate:ship`.
 ```
 
 - [ ] **Step 5: Run test to verify it passes**
@@ -2099,7 +2099,7 @@ The pipeline must never require sub-agents to function.
 - [ ] **Step 6: Write `README.md`**
 
 ```markdown
-# claude-design
+# tastegate
 
 A design pipeline for Claude Code that grounds UI work in your taste, checks its
 own output before showing it, and ships pixel-perfect code.
@@ -2142,12 +2142,12 @@ npx skills@latest use emmanuel-chukwudebere/skills/skills/taste
 **As a Claude Code plugin** — namespaced skills plus the helper scripts:
 
 ```bash
-claude --plugin-dir /path/to/claude-design
+claude --plugin-dir /path/to/tastegate
 ```
 
 Then `/reload-plugins` after edits.
 
-Under the plugin, skills are namespaced (`/claude-design:taste`). Under
+Under the plugin, skills are namespaced (`/tastegate:taste`). Under
 `npx skills add`, they install unnamespaced (`/taste`). Both work; the plugin also
 brings `scripts/`, though every script has an inline equivalent documented in the
 skill that uses it, so nothing depends on them.
@@ -2156,11 +2156,11 @@ skill that uses it, so nothing depends on them.
 
 | Command | When |
 |---|---|
-| `/claude-design:taste` | First, in any new project. Builds the taste profile |
-| `/claude-design:explore` | Direction not settled — three real options |
-| `/claude-design:design` | Build UI in Figma, self-checked before you see it |
-| `/claude-design:ship` | Figma → code, framework of your choice |
-| `/claude-design:review` | Scored audit of existing design or code |
+| `/tastegate:taste` | First, in any new project. Builds the taste profile |
+| `/tastegate:explore` | Direction not settled — three real options |
+| `/tastegate:design` | Build UI in Figma, self-checked before you see it |
+| `/tastegate:ship` | Figma → code, framework of your choice |
+| `/tastegate:review` | Scored audit of existing design or code |
 
 Start with `taste`. The other skills refuse or warn without a profile, by design
 — grounding is the whole thesis.
@@ -2295,7 +2295,7 @@ Clean up: `rm -rf "$TMP"`
 - [ ] **Step 5: Load the plugin and confirm skills register**
 
 Run: `claude --plugin-dir .` then in-session `/help` and check the Custom
-commands tab for the five `claude-design:` entries.
+commands tab for the five `tastegate:` entries.
 
 Record the actual result. If a skill does not appear, fix it before marking this
 step complete.
@@ -2341,14 +2341,14 @@ fields: Command run, Observed output, Verdict (PASS/FAIL/BLOCKED), Notes.
 
 - [ ] **Step 2: Case 1 — registry compliance**
 
-Populate `registry.md`, then build a form with `/claude-design:design`.
+Populate `registry.md`, then build a form with `/tastegate:design`.
 Assert: zero raw hex values in the output, and `instantiate` used wherever a
 handle existed. Record the actual JSX emitted.
 
 - [ ] **Step 3: Case 2 — motion rubric catches planted violations**
 
 Write a component containing all four: `ease-in` on entry, a 450ms dropdown,
-`scale(0)` entry, and an animated `height`. Run `/claude-design:review`.
+`scale(0)` entry, and an animated `height`. Run `/tastegate:review`.
 Assert all four are flagged. Record which were caught.
 
 - [ ] **Step 4: Case 3 — slop detection**
@@ -2403,7 +2403,7 @@ as a component candidate and that `registry.md` was generated, not hand-written.
 
 - [ ] **Step 13: Case 12 — responsive intake**
 
-Run `/claude-design:taste` with a URL. Assert `analyze-url` ran at 390, 834, and
+Run `/tastegate:taste` with a URL. Assert `analyze-url` ran at 390, 834, and
 1440, that screenshots were captured at each, and that `TASTE.md` records type
 scale, spacing, and reflow per breakpoint.
 
@@ -2502,7 +2502,7 @@ actual observed output.
 
 **3. Type and name consistency**
 
-- Plugin name `claude-design` → namespace `/claude-design:<skill>` used consistently in Tasks 5–9 and README.
+- Plugin name `tastegate` → namespace `/tastegate:<skill>` used consistently in Tasks 5–9 and README.
 - Skill directory names `taste`, `design`, `explore`, `review`, `ship` match the `name:` frontmatter and the Task 10 Step 4 assertion.
 - `.claude/design/TASTE.md` and `.claude/design/registry.md` — identical path in Tasks 5, 6, 7, 8, README.
 - `scripts/gates.sh` signature `gates.sh [nodeId] [component-name]` — matches its invocation in Task 6 Step 4.

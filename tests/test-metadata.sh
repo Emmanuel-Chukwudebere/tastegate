@@ -37,7 +37,7 @@ has "$P" "\"license\": \"MIT\""
 # the real name, so a plugin.json reading "imman" was the inconsistent one.
 has "$P" "\"name\": \"$HOLDER\""
 has "$P" "\"url\": \"https://github.com/Emmanuel-Chukwudebere\""
-has "$P" "\"repository\": \"https://github.com/Emmanuel-Chukwudebere/claude-design\""
+has "$P" "\"repository\": \"https://github.com/Emmanuel-Chukwudebere/tastegate\""
 M=.claude-plugin/marketplace.json
 has "$M" "\"name\": \"$HOLDER\""
 has "$M" "\"url\": \"https://github.com/Emmanuel-Chukwudebere\""
@@ -51,7 +51,7 @@ for f in skills/*/SKILL.md; do
   fmhas "$f" "license: MIT"
   fmhas "$f" "metadata:"
   fmhas "$f" "author: $HOLDER"
-  fmhas "$f" "homepage: https://github.com/Emmanuel-Chukwudebere/claude-design"
+  fmhas "$f" "homepage: https://github.com/Emmanuel-Chukwudebere/tastegate"
 done
 if [ "$COUNT" -ge 6 ]; then ok "all $COUNT skills checked"; else bad "expected at least 6 skills, found $COUNT"; fi
 
@@ -79,6 +79,26 @@ for f in skills/*/SKILL.md; do
     bad "$f has a top-level author:/version: — put it under metadata:"
   else ok "$f keeps author/version under metadata"; fi
 done
+
+# --- Identity: the name must be the one this project owns -------------------
+# Renamed from "claude-design" in 0.7.0. Two reasons, and the second is the one
+# that does not go away: Anthropic ships a hosted product called Claude Design,
+# so the names collided outright and every mention resolved to theirs; and
+# "Claude" is Anthropic's trademark, so a promoted third-party tool called
+# claude-design implies an affiliation this project does not have.
+has "$P" "\"name\": \"tastegate\""
+has "$M" "\"name\": \"tastegate\""
+# A rename leaks back one reference at a time — a doc here, a test anchor there —
+# until the old name is load-bearing again. This is the only check that catches it.
+# Excluding this file: the comment above states the old name deliberately, to
+# record why the rename happened. Nothing else may.
+OLD="$(grep -rl "claude-design" --exclude-dir=.git --exclude=test-metadata.sh . 2>/dev/null || true)"
+if [ -z "$OLD" ]; then ok "no file references the old name"
+else bad "old name still present in: $(echo $OLD | tr '\n' ' ')"; fi
+# Naming Anthropic's product for comparison is fair use; implying endorsement is not.
+# Single-line substring: the sentence wraps in the README, and an assertion that
+# spans the wrap fails on formatting rather than on substance.
+has README.md "Independent project, unaffiliated with"
 
 # --- README states the holder ----------------------------------------------
 has README.md "Copyright (c) 2026 $HOLDER"
